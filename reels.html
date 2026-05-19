@@ -3,17 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reels | SEX-Campos</title>
+  <title>Reels | SEX-campos</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body class="reels-body">
 
 <header class="reels-top">
   <a href="index.html">←</a>
-  <b>SEX-Campos Reels</b>
+  <b>SEX-campos Reels</b>
 </header>
 
-<div class="next-overlay" id="nextOverlay">Следующее видео…</div>
+<div class="next-recommend-overlay" id="nextOverlay">
+  <div class="next-box">
+    <div class="next-title">Следующее видео через <span id="nextCountdown">5</span></div>
+    <div class="next-grid" id="nextGrid"></div>
+    <button class="next-cancel" onclick="cancelAutoNext()">Остаться здесь</button>
+  </div>
+</div>
 
 <main class="reels-container" id="reelsContainer"></main>
 
@@ -23,6 +29,9 @@ const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
 const allVideos = [...savedVideos, ...(typeof videos !== "undefined" ? videos : [])];
 
 const container = document.getElementById("reelsContainer");
+let nextTimer = null;
+let nextCountdownTimer = null;
+let pendingNextSlide = null;
 
 function onlineNow(id) {
   return 20 + (Number(id) * 17) % 480;
@@ -128,19 +137,13 @@ function setupAutoplay() {
 
   videosEls.forEach((videoEl, index) => {
     videoEl.addEventListener("ended", () => {
-      showNextOverlay();
+      const nextSlide = slides[index + 1] || slides[0];
+      pendingNextSlide = nextSlide;
 
-      const nextSlide = slides[index + 1];
+      const currentId = Number(slides[index].dataset.id);
+      const currentVideo = allVideos.find(v => Number(v.id) === currentId);
 
-      if (nextSlide) {
-        setTimeout(() => {
-          nextSlide.scrollIntoView({ behavior: "smooth" });
-        }, 500);
-      } else {
-        setTimeout(() => {
-          slides[0]?.scrollIntoView({ behavior: "smooth" });
-        }, 500);
-      }
+      showNextRecommendations(currentVideo, nextSlide);
     });
   });
 
@@ -169,15 +172,75 @@ function setupAutoplay() {
   slides.forEach(slide => observer.observe(slide));
 }
 
-function showNextOverlay() {
+function scoreRelated(base, item) {
+  if (!base || !item) return Math.random();
+
+  let score = 0;
+
+  if (base.category === item.category) score += 50;
+
+  const baseTags = (base.tags || []).map(t => String(t).toLowerCase());
+  const itemTags = (item.tags || []).map(t => String(t).toLowerCase());
+
+  score += itemTags.filter(tag => baseTags.includes(tag)).length * 20;
+  score += Math.random() * 10;
+
+  return score;
+}
+
+function getNextRecommendations(currentVideo) {
+  return allVideos
+    .filter(v => Number(v.id) !== Number(currentVideo?.id))
+    .map(v => ({ ...v, score: scoreRelated(currentVideo, v) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
+}
+
+function showNextRecommendations(currentVideo, nextSlide) {
   const overlay = document.getElementById("nextOverlay");
-  if (!overlay) return;
+  const countdown = document.getElementById("nextCountdown");
+  const grid = document.getElementById("nextGrid");
+
+  if (!overlay || !countdown || !grid) return;
+
+  clearTimeout(nextTimer);
+  clearInterval(nextCountdownTimer);
+
+  const recs = getNextRecommendations(currentVideo);
+
+  grid.innerHTML = recs.map(v => `
+    <a href="video.html?id=${v.id}" class="next-card">
+      <img src="${v.image || ''}" alt="">
+      <span>${v.title}</span>
+    </a>
+  `).join("");
+
+  let seconds = 5;
+  countdown.innerText = seconds;
 
   overlay.classList.add("show");
 
-  setTimeout(() => {
+  nextCountdownTimer = setInterval(() => {
+    seconds--;
+    countdown.innerText = seconds;
+
+    if (seconds <= 0) {
+      clearInterval(nextCountdownTimer);
+    }
+  }, 1000);
+
+  nextTimer = setTimeout(() => {
     overlay.classList.remove("show");
-  }, 900);
+    nextSlide?.scrollIntoView({ behavior: "smooth" });
+  }, 5000);
+}
+
+function cancelAutoNext() {
+  clearTimeout(nextTimer);
+  clearInterval(nextCountdownTimer);
+
+  const overlay = document.getElementById("nextOverlay");
+  overlay?.classList.remove("show");
 }
 
 renderReels();

@@ -1066,3 +1066,89 @@ button:disabled {
   opacity: 1;
   transform: translateX(-50%) scale(1);
 }
+
+
+/* SEX-campos next recommendations */
+.next-recommend-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  background: rgba(0,0,0,.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  opacity: 0;
+  pointer-events: none;
+  transition: .22s;
+}
+
+.next-recommend-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.next-box {
+  width: 100%;
+  max-width: 390px;
+  background: #09090b;
+  border: 1px solid #242833;
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+}
+
+.next-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.next-title span {
+  color: #e73762;
+}
+
+.next-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.next-card {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 10px;
+  align-items: center;
+  color: white;
+  text-decoration: none;
+  background: #111;
+  border: 1px solid #242833;
+  border-radius: 12px;
+  overflow: hidden;
+  min-height: 70px;
+}
+
+.next-card img {
+  width: 96px;
+  height: 70px;
+  object-fit: cover;
+  background: #222;
+}
+
+.next-card span {
+  font-size: 13px;
+  line-height: 1.25;
+  font-weight: 700;
+  padding-right: 8px;
+}
+
+.next-cancel {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  background: #1c1c1f;
+  border: 1px solid #30303a;
+  color: white;
+  border-radius: 12px;
+  font-weight: 800;
+}
