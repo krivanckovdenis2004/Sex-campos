@@ -24,6 +24,7 @@
 <main class="reels-container" id="reelsContainer"></main>
 
 <script src="data.js"></script>
+<script src="recommendations.js"></script>
 <script>
 const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
 const allVideos = [...savedVideos, ...(typeof videos !== "undefined" ? videos : [])];
@@ -88,7 +89,7 @@ function addToHistory(video) {
 }
 
 function renderReels() {
-  const list = allVideos.filter(v => v.video).slice(0, 80);
+  const list = SEXcamposRecommendations.getForYouFeed(allVideos, 80);
 
   if (!list.length) {
     container.innerHTML = `
@@ -189,11 +190,7 @@ function scoreRelated(base, item) {
 }
 
 function getNextRecommendations(currentVideo) {
-  return allVideos
-    .filter(v => Number(v.id) !== Number(currentVideo?.id))
-    .map(v => ({ ...v, score: scoreRelated(currentVideo, v) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
+  return SEXcamposRecommendations.getRecommendations(allVideos, { baseVideo: currentVideo, limit: 3, mode: "reels" });
 }
 
 function showNextRecommendations(currentVideo, nextSlide) {
