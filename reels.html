@@ -24,15 +24,15 @@
 <main class="reels-container" id="reelsContainer"></main>
 
 <script src="data.js"></script>
-<script src="recommendations.js"></script>
 <script>
 const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
-const allVideos = [...savedVideos, ...(typeof videos !== "undefined" ? videos : [])];
+const baseVideos = typeof videos !== "undefined" ? videos : [];
+const allVideos = [...savedVideos, ...baseVideos];
 
 const container = document.getElementById("reelsContainer");
+
 let nextTimer = null;
 let nextCountdownTimer = null;
-let pendingNextSlide = null;
 
 function onlineNow(id) {
   return 20 + (Number(id) * 17) % 480;
@@ -44,6 +44,60 @@ function getList(name) {
 
 function saveList(name, list) {
   localStorage.setItem(name, JSON.stringify(list));
+}
+
+function normalize(value) {
+  return String(value || "").toLowerCase().trim();
+}
+
+function viewsToNumber(value) {
+  const text = String(value || "0").toUpperCase().replace(",", ".");
+  const number = parseFloat(text) || 0;
+
+  if (text.includes("M")) return number * 1000000;
+  if (text.includes("K")) return number * 1000;
+
+  return number;
+}
+
+function tagMatches(a = [], b = []) {
+  const first = a.map(normalize);
+  const second = b.map(normalize);
+  return first.filter(tag => second.includes(tag)).length;
+}
+
+function scoreVideo(base, item) {
+  let score = 0;
+
+  if (base && item) {
+    if (normalize(base.category) === normalize(item.category)) score += 60;
+    score += tagMatches(base.tags || [], item.tags || []) * 25;
+  }
+
+  score += Math.min(viewsToNumber(item.views) / 10000, 25);
+
+  if (item.premium) score += 8;
+
+  score += Math.random() * 15;
+
+  return score;
+}
+
+function getForYouFeed() {
+  return allVideos
+    .filter(v => v && v.video)
+    .map(v => ({ ...v, score: scoreVideo(null, v) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 80);
+}
+
+function getNextRecommendations(currentVideo) {
+  return allVideos
+    .filter(v => v && v.video)
+    .filter(v => Number(v.id) !== Number(currentVideo?.id))
+    .map(v => ({ ...v, score: scoreVideo(currentVideo, v) }))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 3);
 }
 
 function toggleFavorite(id, btn) {
@@ -78,6 +132,7 @@ function toggleLike(id, btn) {
 
 function addToHistory(video) {
   const history = getList("watch_history").filter(item => Number(item.id) !== Number(video.id));
+
   history.unshift({
     id: video.id,
     title: video.title,
@@ -85,11 +140,12 @@ function addToHistory(video) {
     category: video.category,
     date: new Date().toISOString()
   });
+
   saveList("watch_history", history.slice(0, 50));
 }
 
 function renderReels() {
-  const list = SEXcamposRecommendations.getForYouFeed(allVideos, 80);
+  const list = getForYouFeed();
 
   if (!list.length) {
     container.innerHTML = `
@@ -116,6 +172,7 @@ function renderReels() {
       <div class="reel-info">
         <h2>${video.title}</h2>
         <p>👁 ${video.views || "0"} • 🟢 ${onlineNow(video.id)} смотрят • ${video.category || "новое"}</p>
+
         <div class="reel-tags">
           ${(video.tags || []).slice(0, 4).map(tag => `<span>+ ${tag}</span>`).join("")}
         </div>
@@ -129,18 +186,16 @@ function renderReels() {
     </section>
   `).join("");
 
-  setupAutoplay();
+  setupAutoplay(list);
 }
 
-function setupAutoplay() {
+function setupAutoplay(list) {
   const slides = document.querySelectorAll(".reel-slide");
   const videosEls = document.querySelectorAll(".reel-video");
 
   videosEls.forEach((videoEl, index) => {
     videoEl.addEventListener("ended", () => {
       const nextSlide = slides[index + 1] || slides[0];
-      pendingNextSlide = nextSlide;
-
       const currentId = Number(slides[index].dataset.id);
       const currentVideo = allVideos.find(v => Number(v.id) === currentId);
 
@@ -171,26 +226,6 @@ function setupAutoplay() {
   }, { threshold: 0.65 });
 
   slides.forEach(slide => observer.observe(slide));
-}
-
-function scoreRelated(base, item) {
-  if (!base || !item) return Math.random();
-
-  let score = 0;
-
-  if (base.category === item.category) score += 50;
-
-  const baseTags = (base.tags || []).map(t => String(t).toLowerCase());
-  const itemTags = (item.tags || []).map(t => String(t).toLowerCase());
-
-  score += itemTags.filter(tag => baseTags.includes(tag)).length * 20;
-  score += Math.random() * 10;
-
-  return score;
-}
-
-function getNextRecommendations(currentVideo) {
-  return SEXcamposRecommendations.getRecommendations(allVideos, { baseVideo: currentVideo, limit: 3, mode: "reels" });
 }
 
 function showNextRecommendations(currentVideo, nextSlide) {
