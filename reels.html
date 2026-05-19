@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reels | SEX-Campos</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body class="reels-body">
+
+<header class="reels-top">
+  <a href="index.html">←</a>
+  <b>SEX-Campos Reels</b>
+</header>
+
+<main class="reels-container" id="reelsContainer"></main>
+
+<script src="data.js"></script>
+<script>
+const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
+const allVideos = [...savedVideos, ...(typeof videos !== "undefined" ? videos : [])];
+
+const container = document.getElementById("reelsContainer");
+
+function onlineNow(id) {
+  return 20 + (Number(id) * 17) % 480;
+}
+
+function getList(name) {
+  return JSON.parse(localStorage.getItem(name) || "[]");
+}
+
+function saveList(name, list) {
+  localStorage.setItem(name, JSON.stringify(list));
+}
+
+function toggleFavorite(id, btn) {
+  let favs = getList("favorite_videos");
+  const exists = favs.includes(id);
+
+  if (exists) {
+    favs = favs.filter(v => v !== id);
+    btn.innerText = "☆";
+  } else {
+    favs.push(id);
+    btn.innerText = "★";
+  }
+
+  saveList("favorite_videos", favs);
+}
+
+function toggleLike(id, btn) {
+  let likes = getList("liked_videos");
+  const exists = likes.includes(id);
+
+  if (exists) {
+    likes = likes.filter(v => v !== id);
+    btn.innerText = "♡";
+  } else {
+    likes.push(id);
+    btn.innerText = "♥";
+  }
+
+  saveList("liked_videos", likes);
+}
+
+function addToHistory(video) {
+  const history = getList("watch_history").filter(item => Number(item.id) !== Number(video.id));
+  history.unshift({
+    id: video.id,
+    title: video.title,
+    image: video.image,
+    category: video.category,
+    date: new Date().toISOString()
+  });
+  saveList("watch_history", history.slice(0, 50));
+}
+
+function renderReels() {
+  const list = allVideos.filter(v => v.video).slice(0, 80);
+
+  if (!list.length) {
+    container.innerHTML = `
+      <section class="reel-slide empty-reel">
+        <h2>Пока нет видео</h2>
+        <p>Добавь ролики через admin.html</p>
+      </section>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(video => `
+    <section class="reel-slide" data-id="${video.id}">
+      <video
+        class="reel-video"
+        src="${video.video}"
+        poster="${video.image || ''}"
+        playsinline
+        loop
+        preload="metadata"
+      ></video>
+
+      <div class="reel-gradient"></div>
+
+      <div class="reel-info">
+        <h2>${video.title}</h2>
+        <p>👁 ${video.views || "0"} • 🟢 ${onlineNow(video.id)} смотрят • ${video.category || "новое"}</p>
+        <div class="reel-tags">
+          ${(video.tags || []).slice(0, 4).map(tag => `<span>+ ${tag}</span>`).join("")}
+        </div>
+      </div>
+
+      <div class="reel-actions">
+        <button onclick="toggleLike(${video.id}, this)">♡</button>
+        <button onclick="toggleFavorite(${video.id}, this)">☆</button>
+        <a href="video.html?id=${video.id}">↗</a>
+      </div>
+    </section>
+  `).join("");
+
+  setupAutoplay();
+}
+
+function setupAutoplay() {
+  const slides = document.querySelectorAll(".reel-slide");
+  const videosEls = document.querySelectorAll(".reel-video");
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target.querySelector("video");
+      const id = Number(entry.target.dataset.id);
+      const item = allVideos.find(v => Number(v.id) === id);
+
+      if (entry.isIntersecting) {
+        videosEls.forEach(v => {
+          if (v !== video) {
+            v.pause();
+            v.currentTime = 0;
+          }
+        });
+
+        video.play().catch(() => {});
+        if (item) addToHistory(item);
+      } else {
+        video.pause();
+      }
+    });
+  }, { threshold: 0.65 });
+
+  slides.forEach(slide => observer.observe(slide));
+}
+
+renderReels();
+</script>
+</body>
+</html>

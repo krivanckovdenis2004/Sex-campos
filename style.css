@@ -903,12 +903,141 @@ button:disabled {
 }
 
 
-/* Import by URL */
-#importPreviewVideo,
-#importPreviewImage {
-  display: block;
+/* Reels / Shorts style page */
+.reels-body {
+  margin: 0;
+  background: #000;
+  overflow: hidden;
 }
 
-#importPreviewImage[src=""] {
-  display: none;
+.reels-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 80;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: linear-gradient(to bottom, rgba(0,0,0,.7), transparent);
+  color: white;
+}
+
+.reels-top a {
+  color: white;
+  text-decoration: none;
+  background: rgba(0,0,0,.45);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.reels-container {
+  height: 100vh;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reel-slide {
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  scroll-snap-align: start;
+  background: #000;
+  overflow: hidden;
+}
+
+.reel-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.reel-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, rgba(0,0,0,.85), transparent 45%),
+    linear-gradient(to bottom, rgba(0,0,0,.45), transparent 20%);
+  pointer-events: none;
+}
+
+.reel-info {
+  position: absolute;
+  left: 14px;
+  right: 76px;
+  bottom: 78px;
+  z-index: 2;
+}
+
+.reel-info h2 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  line-height: 1.2;
+  text-align: left;
+  font-weight: 800;
+}
+
+.reel-info p {
+  margin: 0 0 10px;
+  color: #ddd;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.reel-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.reel-tags span {
+  background: rgba(0,0,0,.55);
+  border: 1px solid rgba(255,255,255,.18);
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reel-actions {
+  position: absolute;
+  right: 12px;
+  bottom: 92px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.reel-actions button,
+.reel-actions a {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.2);
+  background: rgba(0,0,0,.55);
+  color: white;
+  font-size: 24px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-reel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-reel h2 {
+  font-size: 24px;
 }
