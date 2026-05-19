@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Firebase Admin</title>
+<style>
+body{
+background:#000;
+color:#fff;
+font-family:Arial;
+padding:16px;
+}
+.input{
+width:100%;
+padding:14px;
+margin-bottom:12px;
+background:#111;
+border:1px solid #333;
+border-radius:12px;
+color:white;
+box-sizing:border-box;
+}
+button{
+width:100%;
+padding:14px;
+background:#e73762;
+border:none;
+border-radius:12px;
+font-weight:700;
+color:white;
+}
+.status{
+margin-top:14px;
+padding:12px;
+border-radius:10px;
+background:#111;
+}
+</style>
+</head>
+<body>
+
+<h1>CampusHeat Firebase</h1>
+
+<input id="title" class="input" placeholder="Название">
+<input id="video" class="input" placeholder="MP4 ссылка">
+<input id="image" class="input" placeholder="Превью">
+<input id="category" class="input" placeholder="Категория">
+
+<button id="saveBtn">Сохранить в Firebase</button>
+
+<div id="status" class="status"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDELdrcdlFv6OAWOzPLEBYFOzcQLcK_SgM",
+  authDomain: "sex-campus.firebaseapp.com",
+  projectId: "sex-campus",
+  storageBucket: "sex-campus.firebasestorage.app",
+  messagingSenderId: "1021649767987",
+  appId: "1:1021649767987:web:ccc0b366a159d689e8dd46",
+  measurementId: "G-ZP8X7YRLKW"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+document.getElementById("saveBtn").onclick = async () => {
+  const status = document.getElementById("status");
+
+  try {
+    await addDoc(collection(db, "videos"), {
+      title: document.getElementById("title").value,
+      category: document.getElementById("category").value,
+      video: document.getElementById("video").value,
+      image: document.getElementById("image").value,
+      createdAt: Date.now()
+    });
+
+    status.innerHTML = "✅ Видео добавлено в Firebase";
+  } catch (e) {
+    status.innerHTML = "❌ " + e.message;
+  }
+};
+</script>
+
+</body>
+</html>
