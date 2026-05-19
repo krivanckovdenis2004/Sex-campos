@@ -1041,3 +1041,28 @@ button:disabled {
 .empty-reel h2 {
   font-size: 24px;
 }
+
+
+/* Auto next overlay */
+.next-overlay {
+  position: fixed;
+  top: 74px;
+  left: 50%;
+  transform: translateX(-50%) scale(.95);
+  z-index: 120;
+  background: rgba(0,0,0,.75);
+  color: white;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition: .2s;
+}
+
+.next-overlay.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+}

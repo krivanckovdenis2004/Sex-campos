@@ -13,6 +13,8 @@
   <b>SEX-Campos Reels</b>
 </header>
 
+<div class="next-overlay" id="nextOverlay">Следующее видео…</div>
+
 <main class="reels-container" id="reelsContainer"></main>
 
 <script src="data.js"></script>
@@ -96,7 +98,6 @@ function renderReels() {
         src="${video.video}"
         poster="${video.image || ''}"
         playsinline
-        loop
         preload="metadata"
       ></video>
 
@@ -125,6 +126,24 @@ function setupAutoplay() {
   const slides = document.querySelectorAll(".reel-slide");
   const videosEls = document.querySelectorAll(".reel-video");
 
+  videosEls.forEach((videoEl, index) => {
+    videoEl.addEventListener("ended", () => {
+      showNextOverlay();
+
+      const nextSlide = slides[index + 1];
+
+      if (nextSlide) {
+        setTimeout(() => {
+          nextSlide.scrollIntoView({ behavior: "smooth" });
+        }, 500);
+      } else {
+        setTimeout(() => {
+          slides[0]?.scrollIntoView({ behavior: "smooth" });
+        }, 500);
+      }
+    });
+  });
+
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target.querySelector("video");
@@ -148,6 +167,17 @@ function setupAutoplay() {
   }, { threshold: 0.65 });
 
   slides.forEach(slide => observer.observe(slide));
+}
+
+function showNextOverlay() {
+  const overlay = document.getElementById("nextOverlay");
+  if (!overlay) return;
+
+  overlay.classList.add("show");
+
+  setTimeout(() => {
+    overlay.classList.remove("show");
+  }, 900);
 }
 
 renderReels();
