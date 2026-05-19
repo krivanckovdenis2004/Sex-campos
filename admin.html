@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | SEX-campos</title>
   <link rel="stylesheet" href="style.css"/>
+
+<style>
+.admin-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.delete-btn {
+  width: 100%;
+  margin-top: 8px;
+  background: #321018;
+  border: 1px solid #5a1c2b;
+  color: #fff;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+</style>
+
 </head>
 <body>
 
@@ -374,25 +394,40 @@ function renderAdmin() {
     `Всего добавлено: <b>${list.length}</b> • Сегодня: <b>${list.filter(v => v.date === new Date().toISOString().slice(0,10)).length}</b>`;
 
   document.getElementById("adminGrid").innerHTML = list.slice(0, 10).map(v => `
-    <a href="video.html?id=${v.id}" class="card">
-      <div class="thumb-wrap">
-        <img class="thumb" src="${v.image}" loading="lazy" />
-        ${v.premium ? '<span class="badge">Premium</span>' : ''}
-        <span class="duration">${v.duration}</span>
-      </div>
-      <h3>${v.title}</h3>
-      <div class="meta">
-        <span>👁 ${v.views}</span>
-        <span>🏷 ${v.category}</span>
-      </div>
-<button
-  onclick="event.preventDefault(); event.stopPropagation(); deleteVideo(${v.id})"
-  class="delete-btn"
->
-Удалить
-</button>
-    </a>
+    <div class="card admin-video-card">
+      <a href="video.html?id=${v.id}" class="admin-card-link">
+        <div class="thumb-wrap">
+          <img class="thumb" src="${v.image}" loading="lazy" />
+          ${v.premium ? '<span class="badge">Premium</span>' : ''}
+          <span class="duration">${v.duration}</span>
+        </div>
+
+        <h3>${v.title}</h3>
+
+        <div class="meta">
+          <span>👁 ${v.views}</span>
+          <span>🏷 ${v.category}</span>
+        </div>
+      </a>
+
+      <button
+        type="button"
+        onclick="deleteVideo(${v.id})"
+        class="delete-btn"
+      >
+        Удалить
+      </button>
+    </div>
   `).join("");
+}
+
+function deleteVideo(id) {
+  if (!confirm("Удалить этот ролик?")) return;
+
+  const list = getMyVideos().filter(v => Number(v.id) !== Number(id));
+
+  saveMyVideos(list);
+  renderAdmin();
 }
 
 function exportData() {
