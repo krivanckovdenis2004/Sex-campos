@@ -215,3 +215,11 @@ window.addEventListener("scroll", () => {
     renderVideos();
   }
 });
+function deleteVideo(id) {
+  if (!confirm("Удалить ролик?")) return;
+
+  const list = getMyVideos().filter(v => Number(v.id) !== Number(id));
+
+  saveMyVideos(list);
+  renderAdmin();
+}

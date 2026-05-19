@@ -385,6 +385,9 @@ function renderAdmin() {
         <span>👁 ${v.views}</span>
         <span>🏷 ${v.category}</span>
       </div>
+<button onclick="deleteVideo(${v.id})" class="delete-btn">
+Удалить
+</button>
     </a>
   `).join("");
 }
