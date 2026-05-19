@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CampusHeat</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div class="age-gate" id="ageGate">
+  <div class="age-box">
+    <h1>18+</h1>
+    <p>Сайт предназначен только для совершеннолетних.</p>
+    <button onclick="enterSite()">Мне есть 18</button>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="logo-row">
+    <div class="logo">CampusHeat</div>
+    <div class="top-icons">
+      <span>💬</span>
+      <span>👤</span>
+      <span>⚡</span>
+      <span>🔎</span>
+    </div>
+  </div>
+
+  <button class="menu-btn" onclick="openMenu()">☰ Открыть меню</button>
+
+  <div class="sort-row">
+    <button class="sort-btn" onclick="setSort('new')">◴ новые</button>
+    <button class="sort-btn active" onclick="setSort('popular')">👍 релевантные</button>
+    <button class="sort-btn" onclick="setSort('trend')">🔥 в тренде</button>
+    <button class="sort-btn" onclick="setPremium()">⚡</button>
+  </div>
+
+  <input id="searchInput" class="search" type="text" placeholder="Поиск видео..." />
+
+  <div class="category-scroll" id="categoryList"></div>
+</header>
+
+
+<div class="top-ad">
+  <a href="https://t.me/sex_campos" target="_blank">
+    🔥 Тут может быть ваша реклама
+  </a>
+</div>
+
+<main>
+  <div class="section-head">
+    <h2 id="pageTitle">Релевантные видео</h2>
+    <span id="videoCount" class="count"></span>
+  </div>
+
+  <div class="grid" id="videoGrid"></div>
+
+  <button id="loadMoreBtn" class="load-more">Показать ещё</button>
+</main>
+
+<div class="bottom-menu">
+  <a href="index.html">Главная</a>
+  <a href="#" onclick="setSort('new')">Новые</a>
+  <a href="#" onclick="setSort('popular')">Релевантные</a>
+  <a href="#" onclick="setPremium()">Premium</a>
+  <a href="admin.html">Admin</a>
+</div>
+
+
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+<aside class="side-menu" id="sideMenu">
+  <div class="side-head">
+    <div>
+      <b>CampusHeat</b>
+      <span>меню сайта</span>
+    </div>
+    <button onclick="closeMenu()">×</button>
+  </div>
+
+  <a href="index.html">🏠 Главная</a>
+  <a href="category.html?name=русское">+ русское</a>
+  <a href="category.html?name=крупным планом">+ крупным планом</a>
+  <a href="category.html?name=чулки">+ чулки</a>
+  <a href="category.html?name=мжм">+ мжм</a>
+  <a href="category.html?name=бдсм">+ бдсм</a>
+  <a href="category.html?name=в тренде">🔥 в тренде</a>
+
+  <div class="side-sep"></div>
+
+  <a href="https://t.me/sex_campos" target="_blank">📢 Разместить рекламу</a>
+  <a href="https://t.me/sex_campos" target="_blank">💬 Telegram</a>
+  <a href="history.html">🕘 История просмотров</a>
+  <a href="admin.html">⚙️ Admin</a>
+  <a href="dmca.html">📄 DMCA</a>
+  <a href="18.html">🔞 18+</a>
+  <a href="terms.html">📜 Правила сайта</a>
+  <a href="privacy.html">🔐 Privacy Policy</a>
+</aside>
+
+
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

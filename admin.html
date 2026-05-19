@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin | CampusHeat</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<script>
+const password = "12345";
+const userPass = prompt("Введите пароль");
+if (userPass !== password) {
+  document.body.innerHTML = `
+    <div style="
+      background:black;
+      color:white;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Arial;
+      font-size:24px;
+      text-align:center;
+      padding:20px;
+    ">
+      Доступ запрещён
+    </div>
+  `;
+}
+</script>
+
+<header class="topbar">
+  <a class="back" href="index.html">← На сайт</a>
+  <div class="logo">Admin</div>
+</header>
+
+<main>
+  <div class="admin-card">
+    <h2>Пакетная загрузка</h2>
+
+    <label>Выбери сразу много MP4</label>
+    <input id="bulkVideos" class="input" type="file" accept="video/mp4,video/*" multiple>
+
+    <label>Выбери много превью/картинок</label>
+    <input id="bulkImages" class="input" type="file" accept="image/*" multiple>
+
+    <label>Категория для всего пака</label>
+    <select id="bulkCategory" class="input"></select>
+
+    <label>Теги для всего пака</label>
+    <input id="bulkTags" class="input" placeholder="русское, студенты, подборка">
+
+    <label class="check">
+      <input id="bulkPremium" type="checkbox"> Все как Premium
+    </label>
+
+    <button class="load-more" onclick="addBulkVideos()">Добавить весь пак</button>
+  </div>
+
+  <div class="admin-card">
+    <h2>Добавить одно видео</h2>
+
+    <label>MP4 файл с телефона</label>
+    <input id="videoFile" class="input" type="file" accept="video/mp4,video/*">
+
+    <label>Или ссылка на видео MP4</label>
+    <input id="video" class="input" placeholder="https://site.com/video.mp4">
+
+    <label>Превью / картинка</label>
+    <input id="imageFile" class="input" type="file" accept="image/*">
+
+    <label>Или ссылка на превью</label>
+    <input id="image" class="input" placeholder="https://site.com/preview.jpg">
+
+    <div class="admin-preview">
+      <video id="previewVideo" controls playsinline></video>
+      <img id="previewImage" alt="preview">
+    </div>
+
+    <label>Название</label>
+    <input id="title" class="input" placeholder="Название видео">
+
+    <label>Категория</label>
+    <select id="category" class="input"></select>
+
+    <label>Длительность</label>
+    <input id="duration" class="input" placeholder="12:45">
+
+    <label>Просмотры</label>
+    <input id="views" class="input" placeholder="405K">
+
+    <label>Теги через запятую</label>
+    <input id="tags" class="input" placeholder="русское, крупным планом, чулки">
+
+    <label class="check">
+      <input id="premium" type="checkbox"> Premium
+    </label>
+
+    <button class="load-more" onclick="addVideo()">Добавить видео</button>
+    <button class="dark-btn" onclick="exportData()">Скачать новый data.js</button>
+    <button class="dark-btn" onclick="clearMyVideos()">Очистить мои видео</button>
+  </div>
+
+  <div class="admin-help">
+    <b>Важно:</b> пакетная загрузка в этой HTML-версии сохраняет локальные ссылки браузера. 
+    Это удобно для черновика и заполнения структуры. Для настоящего сайта видео нужно будет загрузить в Cloudflare R2/S3/хостинг и заменить ссылки на постоянные.
+  </div>
+
+  <h2>Мои добавленные видео</h2>
+  <div class="grid" id="adminGrid"></div>
+</main>
+
+<script src="data.js"></script>
+<script>
+const categoriesRu = [
+  "русское", "крупным планом", "чулки", "мжм", "мать и дочь",
+  "тик ток", "познавательное", "жмж", "бдсм", "сексвайф",
+  "грязные разговоры", "в поезде", "женский куколдинг",
+  "упругие попки", "куколд", "оргaзм", "с разговорами",
+  "межрасовый", "кончают внутрь", "в тренде", "новые", "релевантные"
+];
+
+function fillSelect(id) {
+  document.getElementById(id).innerHTML = categoriesRu.map(c =>
+    `<option value="${c}">${c}</option>`
+  ).join("");
+}
+
+fillSelect("category");
+fillSelect("bulkCategory");
+
+const videoFile = document.getElementById("videoFile");
+const imageFile = document.getElementById("imageFile");
+const videoInput = document.getElementById("video");
+const imageInput = document.getElementById("image");
+const previewVideo = document.getElementById("previewVideo");
+const previewImage = document.getElementById("previewImage");
+const durationInput = document.getElementById("duration");
+const titleInput = document.getElementById("title");
+
+let localVideoUrl = "";
+let localImageUrl = "";
+
+function formatDuration(seconds) {
+  if (!seconds || Number.isNaN(seconds)) return "0:00";
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return min + ":" + String(sec).padStart(2, "0");
+}
+
+function cleanTitle(fileName) {
+  return fileName
+    .replace(/\.[^/.]+$/, "")
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .trim();
+}
+
+videoFile.addEventListener("change", () => {
+  const file = videoFile.files[0];
+  if (!file) return;
+
+  localVideoUrl = URL.createObjectURL(file);
+  previewVideo.src = localVideoUrl;
+  videoInput.value = localVideoUrl;
+
+  if (!titleInput.value) {
+    titleInput.value = cleanTitle(file.name);
+  }
+});
+
+previewVideo.addEventListener("loadedmetadata", () => {
+  durationInput.value = formatDuration(previewVideo.duration);
+});
+
+imageFile.addEventListener("change", () => {
+  const file = imageFile.files[0];
+  if (!file) return;
+
+  localImageUrl = URL.createObjectURL(file);
+  previewImage.src = localImageUrl;
+  imageInput.value = localImageUrl;
+});
+
+function getMyVideos() {
+  return JSON.parse(localStorage.getItem("my_videos") || "[]");
+}
+
+function saveMyVideos(list) {
+  localStorage.setItem("my_videos", JSON.stringify(list));
+}
+
+function addVideo() {
+  const list = getMyVideos();
+
+  const item = {
+    id: Date.now(),
+    title: document.getElementById("title").value || "Без названия",
+    category: document.getElementById("category").value || "русское",
+    video: document.getElementById("video").value || "https://www.w3schools.com/html/mov_bbb.mp4",
+    image: document.getElementById("image").value || "https://picsum.photos/600/380?random=" + Date.now(),
+    duration: document.getElementById("duration").value || "0:00",
+    views: document.getElementById("views").value || "0",
+    premium: document.getElementById("premium").checked,
+    date: new Date().toISOString().slice(0, 10),
+    tags: document.getElementById("tags").value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean)
+  };
+
+  list.unshift(item);
+  saveMyVideos(list);
+  renderAdmin();
+  alert("Видео добавлено");
+}
+
+function addBulkVideos() {
+  const files = Array.from(document.getElementById("bulkVideos").files || []);
+  const images = Array.from(document.getElementById("bulkImages").files || []);
+
+  if (!files.length) {
+    alert("Сначала выбери MP4 файлы");
+    return;
+  }
+
+  const category = document.getElementById("bulkCategory").value || "русское";
+  const tags = document.getElementById("bulkTags").value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  const premium = document.getElementById("bulkPremium").checked;
+  const list = getMyVideos();
+
+  files.forEach((file, index) => {
+    const videoUrl = URL.createObjectURL(file);
+    const imageFile = images[index] || images[0];
+    const imageUrl = imageFile
+      ? URL.createObjectURL(imageFile)
+      : "https://picsum.photos/600/380?random=" + Date.now() + index;
+
+    list.unshift({
+      id: Date.now() + index,
+      title: cleanTitle(file.name) || "Без названия",
+      category,
+      video: videoUrl,
+      image: imageUrl,
+      duration: "0:00",
+      views: "0",
+      premium,
+      date: new Date().toISOString().slice(0, 10),
+      tags: tags.length ? tags : [category]
+    });
+  });
+
+  saveMyVideos(list);
+  renderAdmin();
+  alert("Добавлено видео: " + files.length);
+}
+
+function renderAdmin() {
+  const list = getMyVideos();
+
+  document.getElementById("adminGrid").innerHTML = list.map(v => `
+    <a href="video.html?id=${v.id}" class="card">
+      <div class="thumb-wrap">
+        <img class="thumb" src="${v.image}" loading="lazy" />
+        ${v.premium ? '<span class="badge">Premium</span>' : ''}
+        <span class="duration">${v.duration}</span>
+      </div>
+      <h3>${v.title}</h3>
+      <div class="meta">
+        <span>👁 ${v.views}</span>
+        <span>◴ ${v.duration}</span>
+      </div>
+    </a>
+  `).join("");
+}
+
+function exportData() {
+  const my = getMyVideos();
+  const merged = [...my, ...videos];
+  const content = "const videos = " + JSON.stringify(merged, null, 2) + ";";
+
+  const blob = new Blob([content], { type: "text/javascript" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "data.js";
+  a.click();
+
+  URL.revokeObjectURL(url);
+}
+
+function clearMyVideos() {
+  if (!confirm("Удалить все видео, добавленные через админку?")) return;
+  localStorage.removeItem("my_videos");
+  renderAdmin();
+}
+
+renderAdmin();
+</script>
+</body>
+</html>

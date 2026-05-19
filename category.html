@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Категория | CampusHeat</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back" href="index.html">← Главная</a>
+  <div class="logo">CampusHeat</div>
+
+  <input id="searchInput" class="search" type="text" placeholder="Поиск в категории..." />
+</header>
+
+
+<div class="top-ad">
+  <a href="https://t.me/sex_campos" target="_blank">
+    🔥 Тут может быть ваша реклама
+  </a>
+</div>
+
+<main>
+  <div class="section-head">
+    <h2 id="categoryTitle">Категория</h2>
+    <span id="videoCount" class="count"></span>
+  </div>
+
+  <div class="grid" id="categoryGrid"></div>
+
+  <button id="loadMoreBtn" class="load-more">Показать ещё</button>
+</main>
+
+<div class="bottom-menu">
+  <a href="index.html">Главная</a>
+  <a href="index.html">Новые</a>
+  <a href="index.html">Категории</a>
+  <a href="admin.html">Admin</a>
+</div>
+
+<script src="data.js"></script>
+<script>
+const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
+const allVideos = [...savedVideos, ...videos];
+
+const params = new URLSearchParams(window.location.search);
+const category = params.get("name") || "русское";
+
+const title = document.getElementById("categoryTitle");
+const grid = document.getElementById("categoryGrid");
+const searchInput = document.getElementById("searchInput");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const videoCount = document.getElementById("videoCount");
+
+let visibleCount = 12;
+const step = 12;
+
+document.title = category + " | CampusHeat";
+title.innerText = "+ " + category;
+
+function getList() {
+  const text = searchInput.value.toLowerCase().trim();
+
+  return allVideos.filter(video => {
+    const sameCategory = video.category === category || (video.tags || []).includes(category);
+
+    const matchesSearch =
+      video.title.toLowerCase().includes(text) ||
+      video.category.toLowerCase().includes(text) ||
+      (video.tags || []).join(" ").toLowerCase().includes(text);
+
+    return sameCategory && matchesSearch;
+  });
+}
+
+function render() {
+  const list = getList();
+  const visible = list.slice(0, visibleCount);
+
+  videoCount.innerText = list.length + " видео";
+
+  grid.innerHTML = visible.map((video, index) => {
+    const adCard = index > 0 && index % 8 === 0 ? `
+      <a href="https://t.me/sex_campos" target="_blank" class="ad-card">
+        <div class="ad-card-inner">
+          <div class="ad-title">🔥 Тут может быть ваша реклама</div>
+          <div class="ad-text">Разместить рекламу на сайте</div>
+          <div class="ad-button">Написать в Telegram</div>
+        </div>
+      </a>
+    ` : "";
+
+    return adCard + `
+      <a href="video.html?id=${video.id}" class="card">
+        <div class="thumb-wrap">
+          <img class="thumb" src="${video.image}" loading="lazy" />
+          ${video.premium ? '<span class="badge">Premium</span>' : ''}
+          <span class="duration">${video.duration}</span>
+        </div>
+        <h3>${video.title}</h3>
+        <div class="meta">
+          <span>👁 ${video.views}</span>
+          <span>◴ ${video.duration}</span>
+          <span>🏷 ${video.category}</span>
+        </div>
+      </a>
+    `;
+  }).join("");
+
+  loadMoreBtn.style.display = visible.length < list.length ? "block" : "none";
+}
+
+searchInput.addEventListener("input", () => {
+  visibleCount = step;
+  render();
+});
+
+loadMoreBtn.addEventListener("click", () => {
+  visibleCount += step;
+  render();
+});
+
+render();
+</script>
+</body>
+</html>

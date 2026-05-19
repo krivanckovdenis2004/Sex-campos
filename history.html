@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>История | CampusHeat</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="back" href="index.html">← Назад</a>
+  <div class="logo">История</div>
+</header>
+
+<main>
+  <div class="section-head">
+    <h2>Недавно смотрели</h2>
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="grid" id="historyGrid"></div>
+</main>
+
+<div class="bottom-menu">
+  <a href="index.html">Главная</a>
+  <a href="category.html?name=в тренде">Тренды</a>
+  <a href="history.html">История</a>
+  <a href="admin.html">Admin</a>
+</div>
+
+<script>
+const history = JSON.parse(localStorage.getItem("watch_history") || "[]");
+document.getElementById("count").innerText = history.length + " видео";
+
+document.getElementById("historyGrid").innerHTML = history.map(v => `
+  <a href="video.html?id=${v.id}" class="card">
+    <div class="thumb-wrap">
+      <img class="thumb" src="${v.image}" loading="lazy" />
+    </div>
+    <h3>${v.title}</h3>
+    <div class="meta">
+      <span>🏷 ${v.category}</span>
+    </div>
+  </a>
+`).join("");
+</script>
+</body>
+</html>
