@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin | CampusHeat</title>
+  <title>Admin | SEX-campos</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -11,11 +11,12 @@
 <script>
 const password = "12345";
 const userPass = prompt("Введите пароль");
+
 if (userPass !== password) {
   document.body.innerHTML = `
     <div style="
-      background:black;
-      color:white;
+      background:#000;
+      color:#fff;
       height:100vh;
       display:flex;
       align-items:center;
@@ -31,71 +32,21 @@ if (userPass !== password) {
 }
 </script>
 
-<header class="topbar">
+<header class="topbar admin-topbar">
   <a class="back" href="index.html">← На сайт</a>
-  <div class="logo">Admin</div>
+  <div class="logo">SEX-campos Admin</div>
 </header>
 
-<main>
-  <div class="admin-card">
-    <h2>Пакетная загрузка</h2>
-
-    <label>Выбери сразу много MP4</label>
-    <input id="bulkVideos" class="input" type="file" accept="video/mp4,video/*" multiple>
-
-    <label>Выбери много превью/картинок</label>
-    <input id="bulkImages" class="input" type="file" accept="image/*" multiple>
-
-    <label>Категория для всего пака</label>
-    <select id="bulkCategory" class="input"></select>
-
-    <label>Теги для всего пака</label>
-    <input id="bulkTags" class="input" placeholder="русское, студенты, подборка">
-
-    <label class="check">
-      <input id="bulkPremium" type="checkbox"> Все как Premium
-    </label>
-
-    <button class="load-more" onclick="addBulkVideos()">Добавить весь пак</button>
-  </div>
-
+<main class="admin-page">
 
   <div class="admin-card">
-    <h2>Импорт по ссылке</h2>
-
-    <label>Прямая ссылка на MP4</label>
-    <input id="importVideoUrl" class="input" placeholder="https://site.com/video.mp4">
-
-    <label>Ссылка на превью</label>
-    <input id="importImageUrl" class="input" placeholder="https://site.com/preview.jpg">
-
-    <label>Название</label>
-    <input id="importTitle" class="input" placeholder="Название ролика">
-
-    <label>Категория</label>
-    <select id="importCategory" class="input"></select>
-
-    <label>Теги через запятую</label>
-    <input id="importTags" class="input" placeholder="русское, новое, подборка">
-
-    <div class="admin-preview">
-      <video id="importPreviewVideo" controls playsinline></video>
-      <img id="importPreviewImage" alt="preview">
-    </div>
-
-    <div id="importStatus" class="duplicate-warning"></div>
-
-    <button class="dark-btn" onclick="previewImportUrl()">Проверить ссылку</button>
-    <button id="importAddBtn" class="load-more" onclick="addImportedVideo()">Добавить по ссылке</button>
-  </div>
-
-  <div class="admin-card">
-    <h2>Добавить одно видео</h2>
+    <h2>Добавить ролик</h2>
+    <p class="admin-note">Ежедневная загрузка 2–4 роликов. Заполни поля и нажми “Добавить”.</p>
 
     <label>MP4 файл с телефона</label>
     <input id="videoFile" class="input" type="file" accept="video/mp4,video/*">
 
-    <label>Или ссылка на видео MP4</label>
+    <label>Или ссылка на MP4</label>
     <input id="video" class="input" placeholder="https://site.com/video.mp4">
 
     <label>Превью / картинка</label>
@@ -117,52 +68,88 @@ if (userPass !== password) {
     <label>Категория</label>
     <select id="category" class="input"></select>
 
-    <label>Длительность</label>
-    <input id="duration" class="input" placeholder="12:45">
-
-    <label>Просмотры</label>
-    <input id="views" class="input" placeholder="405K">
+    <div class="quick-row" id="quickCategories"></div>
 
     <label>Теги через запятую</label>
-    <input id="tags" class="input" placeholder="русское, крупным планом, чулки">
+    <input id="tags" class="input" placeholder="русское, pov, с разговорами">
+
+    <div class="quick-row" id="quickTags"></div>
+
+    <div class="two-col">
+      <div>
+        <label>Длительность</label>
+        <input id="duration" class="input" placeholder="12:45">
+      </div>
+
+      <div>
+        <label>Просмотры</label>
+        <input id="views" class="input" placeholder="0">
+      </div>
+    </div>
 
     <label class="check">
       <input id="premium" type="checkbox"> Premium
     </label>
 
-    <button id="singleAddBtn" class="load-more" onclick="addVideo()">Добавить видео</button>
+    <button id="singleAddBtn" class="load-more" onclick="addVideo()">Добавить ролик</button>
     <button class="dark-btn" onclick="exportData()">Скачать новый data.js</button>
-    <button class="dark-btn" onclick="clearMyVideos()">Очистить мои видео</button>
+    <button class="dark-btn danger-btn" onclick="clearMyVideos()">Очистить добавленные</button>
   </div>
 
-  <div class="admin-help">
-    <b>Важно:</b> пакетная загрузка в этой HTML-версии сохраняет локальные ссылки браузера. 
-    Это удобно для черновика и заполнения структуры. Для настоящего сайта видео нужно будет загрузить в Cloudflare R2/S3/хостинг и заменить ссылки на постоянные.
+  <div class="admin-card">
+    <h2>Последние добавленные</h2>
+    <div class="admin-stats" id="adminStats"></div>
+    <div class="grid compact-grid" id="adminGrid"></div>
   </div>
 
-  <h2>Мои добавленные видео</h2>
-  <div class="grid" id="adminGrid"></div>
 </main>
 
 <script src="data.js"></script>
 <script>
 const categoriesRu = [
-  "русское", "крупным планом", "чулки", "мжм", "мать и дочь",
-  "тик ток", "познавательное", "жмж", "бдсм", "сексвайф",
-  "грязные разговоры", "в поезде", "женский куколдинг",
-  "упругие попки", "куколд", "оргaзм", "с разговорами",
-  "межрасовый", "кончают внутрь", "в тренде", "новые", "релевантные"
+  "русское",
+  "грязные разговоры",
+  "с разговорами",
+  "pov",
+  "измена",
+  "красивое",
+  "соблазнение девушки",
+  "непостановочное",
+  "спящие",
+  "крупным планом",
+  "чулки",
+  "мжм",
+  "жмж",
+  "бдсм",
+  "сексвайф",
+  "в поезде",
+  "в тренде",
+  "новые"
 ];
 
-function fillSelect(id) {
-  document.getElementById(id).innerHTML = categoriesRu.map(c =>
-    `<option value="${c}">${c}</option>`
-  ).join("");
-}
+const quickTags = [
+  "русское",
+  "грязные разговоры",
+  "с разговорами",
+  "спящие",
+  "измена",
+  "pov",
+  "непостановочное",
+  "красивое",
+  "соблазнение девушки"
+];
 
-fillSelect("category");
-fillSelect("bulkCategory");
-fillSelect("importCategory");
+document.getElementById("category").innerHTML = categoriesRu.map(c =>
+  `<option value="${c}">${c}</option>`
+).join("");
+
+document.getElementById("quickCategories").innerHTML = categoriesRu.slice(0, 9).map(c =>
+  `<button type="button" onclick="setCategory('${c}')">${c}</button>`
+).join("");
+
+document.getElementById("quickTags").innerHTML = quickTags.map(tag =>
+  `<button type="button" onclick="addTag('${tag}')">+ ${tag}</button>`
+).join("");
 
 const videoFile = document.getElementById("videoFile");
 const imageFile = document.getElementById("imageFile");
@@ -172,55 +159,6 @@ const previewVideo = document.getElementById("previewVideo");
 const previewImage = document.getElementById("previewImage");
 const durationInput = document.getElementById("duration");
 const titleInput = document.getElementById("title");
-
-let localVideoUrl = "";
-let localImageUrl = "";
-
-function formatDuration(seconds) {
-  if (!seconds || Number.isNaN(seconds)) return "0:00";
-  const min = Math.floor(seconds / 60);
-  const sec = Math.floor(seconds % 60);
-  return min + ":" + String(sec).padStart(2, "0");
-}
-
-function cleanTitle(fileName) {
-  return fileName
-    .replace(/\.[^/.]+$/, "")
-    .replaceAll("_", " ")
-    .replaceAll("-", " ")
-    .trim();
-}
-
-videoFile.addEventListener("change", () => {
-  const file = videoFile.files[0];
-  if (!file) return;
-
-  localVideoUrl = URL.createObjectURL(file);
-  previewVideo.src = localVideoUrl;
-  videoInput.value = localVideoUrl;
-
-  if (!titleInput.value) {
-    titleInput.value = cleanTitle(file.name);
-  }
-
-  checkSingleDuplicateLive();
-});
-
-previewVideo.addEventListener("loadedmetadata", () => {
-  durationInput.value = formatDuration(previewVideo.duration);
-});
-
-imageFile.addEventListener("change", () => {
-  const file = imageFile.files[0];
-  if (!file) return;
-
-  localImageUrl = URL.createObjectURL(file);
-  previewImage.src = localImageUrl;
-  imageInput.value = localImageUrl;
-});
-
-titleInput.addEventListener("input", checkSingleDuplicateLive);
-videoInput.addEventListener("input", checkSingleDuplicateLive);
 
 function getMyVideos() {
   return JSON.parse(localStorage.getItem("my_videos") || "[]");
@@ -237,8 +175,18 @@ function normalizeText(value) {
     .replace(/\s+/g, " ");
 }
 
+function cleanTitle(fileName) {
+  return decodeURIComponent(fileName || "")
+    .replace(/\.[^/.]+$/, "")
+    .replaceAll("_", " ")
+    .replaceAll("-", " ")
+    .replaceAll(".", " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function isDuplicateVideo(newItem, list) {
-  const all = [...list, ...videos];
+  const all = [...list, ...(typeof videos !== "undefined" ? videos : [])];
 
   return all.some(item => {
     const sameTitle =
@@ -265,11 +213,11 @@ function isDuplicateVideo(newItem, list) {
 }
 
 function getCurrentSingleVideoDraft() {
-  const file = document.getElementById("videoFile").files[0];
+  const file = videoFile.files[0];
 
   return {
-    title: document.getElementById("title").value || "",
-    video: document.getElementById("video").value || "",
+    title: titleInput.value || "",
+    video: videoInput.value || "",
     fileName: file ? file.name : "",
     fileSize: file ? file.size : 0
   };
@@ -278,8 +226,6 @@ function getCurrentSingleVideoDraft() {
 function checkSingleDuplicateLive() {
   const warning = document.getElementById("duplicateWarning");
   const addBtn = document.getElementById("singleAddBtn");
-
-  if (!warning || !addBtn) return;
 
   const draft = getCurrentSingleVideoDraft();
 
@@ -291,7 +237,7 @@ function checkSingleDuplicateLive() {
 
   if (!hasAnyData) {
     warning.innerHTML = "";
-    warning.classList.remove("show");
+    warning.classList.remove("show", "ok");
     addBtn.disabled = false;
     addBtn.classList.remove("disabled");
     return;
@@ -302,6 +248,7 @@ function checkSingleDuplicateLive() {
   if (duplicate) {
     warning.innerHTML = "⚠️ Такой ролик уже есть. Повторно добавить нельзя.";
     warning.classList.add("show");
+    warning.classList.remove("ok");
     addBtn.disabled = true;
     addBtn.classList.add("disabled");
   } else {
@@ -312,18 +259,73 @@ function checkSingleDuplicateLive() {
   }
 }
 
+function formatDuration(seconds) {
+  if (!seconds || Number.isNaN(seconds)) return "0:00";
+  const min = Math.floor(seconds / 60);
+  const sec = Math.floor(seconds % 60);
+  return min + ":" + String(sec).padStart(2, "0");
+}
+
+function setCategory(category) {
+  document.getElementById("category").value = category;
+}
+
+function addTag(tag) {
+  const input = document.getElementById("tags");
+  const current = input.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  if (!current.includes(tag)) {
+    current.push(tag);
+  }
+
+  input.value = current.join(", ");
+}
+
+videoFile.addEventListener("change", () => {
+  const file = videoFile.files[0];
+  if (!file) return;
+
+  const localVideoUrl = URL.createObjectURL(file);
+  previewVideo.src = localVideoUrl;
+  videoInput.value = localVideoUrl;
+
+  if (!titleInput.value) {
+    titleInput.value = cleanTitle(file.name);
+  }
+
+  checkSingleDuplicateLive();
+});
+
+previewVideo.addEventListener("loadedmetadata", () => {
+  durationInput.value = formatDuration(previewVideo.duration);
+});
+
+imageFile.addEventListener("change", () => {
+  const file = imageFile.files[0];
+  if (!file) return;
+
+  const localImageUrl = URL.createObjectURL(file);
+  previewImage.src = localImageUrl;
+  imageInput.value = localImageUrl;
+});
+
+titleInput.addEventListener("input", checkSingleDuplicateLive);
+videoInput.addEventListener("input", checkSingleDuplicateLive);
+
 function addVideo() {
   const list = getMyVideos();
-
-  const file = document.getElementById("videoFile").files[0];
+  const file = videoFile.files[0];
 
   const item = {
     id: Date.now(),
-    title: document.getElementById("title").value || "Без названия",
+    title: titleInput.value || "Без названия",
     category: document.getElementById("category").value || "русское",
-    video: document.getElementById("video").value || "https://www.w3schools.com/html/mov_bbb.mp4",
-    image: document.getElementById("image").value || "https://picsum.photos/600/380?random=" + Date.now(),
-    duration: document.getElementById("duration").value || "0:00",
+    video: videoInput.value || "https://www.w3schools.com/html/mov_bbb.mp4",
+    image: imageInput.value || "https://picsum.photos/600/380?random=" + Date.now(),
+    duration: durationInput.value || "0:00",
     views: document.getElementById("views").value || "0",
     premium: document.getElementById("premium").checked,
     date: new Date().toISOString().slice(0, 10),
@@ -343,165 +345,35 @@ function addVideo() {
 
   list.unshift(item);
   saveMyVideos(list);
-  renderAdmin();
-  alert("Видео добавлено");
-  checkSingleDuplicateLive();
-}
-
-function addBulkVideos() {
-  const files = Array.from(document.getElementById("bulkVideos").files || []);
-  const images = Array.from(document.getElementById("bulkImages").files || []);
-
-  if (!files.length) {
-    alert("Сначала выбери MP4 файлы");
-    return;
-  }
-
-  const category = document.getElementById("bulkCategory").value || "русское";
-  const tags = document.getElementById("bulkTags").value
-    .split(",")
-    .map(t => t.trim())
-    .filter(Boolean);
-
-  const premium = document.getElementById("bulkPremium").checked;
-  const list = getMyVideos();
-
-  let added = 0;
-  let skipped = 0;
-
-  files.forEach((file, index) => {
-    const videoUrl = URL.createObjectURL(file);
-    const imageFile = images[index] || images[0];
-    const imageUrl = imageFile
-      ? URL.createObjectURL(imageFile)
-      : "https://picsum.photos/600/380?random=" + Date.now() + index;
-
-    const item = {
-      id: Date.now() + index,
-      title: cleanTitle(file.name) || "Без названия",
-      category,
-      video: videoUrl,
-      image: imageUrl,
-      duration: "0:00",
-      views: "0",
-      premium,
-      date: new Date().toISOString().slice(0, 10),
-      fileName: file.name,
-      fileSize: file.size,
-      tags: tags.length ? tags : [category]
-    };
-
-    if (isDuplicateVideo(item, list)) {
-      skipped++;
-      return;
-    }
-
-    list.unshift(item);
-    added++;
-  });
-
-  saveMyVideos(list);
+  resetForm();
   renderAdmin();
 
-  alert("Добавлено: " + added + "\nПропущено дублей: " + skipped);
+  alert("Ролик добавлен");
 }
 
-
-function guessTitleFromUrl(url) {
-  try {
-    const clean = decodeURIComponent(url.split("?")[0].split("/").pop() || "");
-    return clean.replace(/\.[^/.]+$/, "").replaceAll("_", " ").replaceAll("-", " ").trim();
-  } catch (e) {
-    return "";
-  }
+function resetForm() {
+  videoFile.value = "";
+  imageFile.value = "";
+  videoInput.value = "";
+  imageInput.value = "";
+  titleInput.value = "";
+  durationInput.value = "";
+  document.getElementById("views").value = "";
+  document.getElementById("tags").value = "";
+  document.getElementById("premium").checked = false;
+  previewVideo.removeAttribute("src");
+  previewImage.removeAttribute("src");
+  document.getElementById("duplicateWarning").innerHTML = "";
+  document.getElementById("duplicateWarning").classList.remove("show", "ok");
 }
-
-function getImportDraft() {
-  const videoUrl = document.getElementById("importVideoUrl").value.trim();
-  const imageUrl = document.getElementById("importImageUrl").value.trim();
-
-  return {
-    id: Date.now(),
-    title: document.getElementById("importTitle").value.trim() || guessTitleFromUrl(videoUrl) || "Видео по ссылке",
-    category: document.getElementById("importCategory").value || "русское",
-    video: videoUrl,
-    image: imageUrl || "https://picsum.photos/600/380?random=" + Date.now(),
-    duration: "0:00",
-    views: "0",
-    premium: false,
-    date: new Date().toISOString().slice(0, 10),
-    fileName: guessTitleFromUrl(videoUrl),
-    fileSize: 0,
-    tags: document.getElementById("importTags").value
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean)
-  };
-}
-
-function previewImportUrl() {
-  const status = document.getElementById("importStatus");
-  const videoUrl = document.getElementById("importVideoUrl").value.trim();
-  const imageUrl = document.getElementById("importImageUrl").value.trim();
-
-  if (!videoUrl) {
-    status.innerHTML = "⚠️ Вставь прямую ссылку на MP4.";
-    status.className = "duplicate-warning show";
-    return;
-  }
-
-  if (!document.getElementById("importTitle").value) {
-    document.getElementById("importTitle").value = guessTitleFromUrl(videoUrl);
-  }
-
-  document.getElementById("importPreviewVideo").src = videoUrl;
-  document.getElementById("importPreviewImage").src = imageUrl || "";
-
-  const draft = getImportDraft();
-
-  if (isDuplicateVideo(draft, getMyVideos())) {
-    status.innerHTML = "⚠️ Такой ролик уже есть. Повторно добавить нельзя.";
-    status.className = "duplicate-warning show";
-    document.getElementById("importAddBtn").disabled = true;
-    document.getElementById("importAddBtn").classList.add("disabled");
-    return;
-  }
-
-  status.innerHTML = "✅ Ссылка добавлена в предпросмотр. Можно добавлять.";
-  status.className = "duplicate-warning show ok";
-  document.getElementById("importAddBtn").disabled = false;
-  document.getElementById("importAddBtn").classList.remove("disabled");
-}
-
-function addImportedVideo() {
-  const list = getMyVideos();
-  const item = getImportDraft();
-
-  if (!item.video) {
-    alert("Вставь ссылку на MP4");
-    return;
-  }
-
-  if (isDuplicateVideo(item, list)) {
-    alert("Такой ролик уже есть. Повторно не добавляю.");
-    previewImportUrl();
-    return;
-  }
-
-  list.unshift(item);
-  saveMyVideos(list);
-  renderAdmin();
-  alert("Видео добавлено по ссылке");
-}
-
-document.getElementById("importVideoUrl").addEventListener("input", previewImportUrl);
-document.getElementById("importImageUrl").addEventListener("input", previewImportUrl);
-document.getElementById("importTitle").addEventListener("input", previewImportUrl);
 
 function renderAdmin() {
   const list = getMyVideos();
 
-  document.getElementById("adminGrid").innerHTML = list.map(v => `
+  document.getElementById("adminStats").innerHTML =
+    `Всего добавлено: <b>${list.length}</b> • Сегодня: <b>${list.filter(v => v.date === new Date().toISOString().slice(0,10)).length}</b>`;
+
+  document.getElementById("adminGrid").innerHTML = list.slice(0, 10).map(v => `
     <a href="video.html?id=${v.id}" class="card">
       <div class="thumb-wrap">
         <img class="thumb" src="${v.image}" loading="lazy" />
@@ -511,7 +383,7 @@ function renderAdmin() {
       <h3>${v.title}</h3>
       <div class="meta">
         <span>👁 ${v.views}</span>
-        <span>◴ ${v.duration}</span>
+        <span>🏷 ${v.category}</span>
       </div>
     </a>
   `).join("");
@@ -519,7 +391,7 @@ function renderAdmin() {
 
 function exportData() {
   const my = getMyVideos();
-  const merged = [...my, ...videos];
+  const merged = [...my, ...(typeof videos !== "undefined" ? videos : [])];
   const content = "const videos = " + JSON.stringify(merged, null, 2) + ";";
 
   const blob = new Blob([content], { type: "text/javascript" });
@@ -534,7 +406,7 @@ function exportData() {
 }
 
 function clearMyVideos() {
-  if (!confirm("Удалить все видео, добавленные через админку?")) return;
+  if (!confirm("Удалить все добавленные видео?")) return;
   localStorage.removeItem("my_videos");
   renderAdmin();
 }
