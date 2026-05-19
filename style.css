@@ -872,3 +872,43 @@ label {
   font-size: 13px;
   line-height: 1.35;
 }
+
+
+/* Live duplicate check */
+.duplicate-warning {
+  display: none;
+  margin: -4px 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #2a0d16;
+  border: 1px solid #e73762;
+  color: #fff;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.duplicate-warning.show {
+  display: block;
+}
+
+.duplicate-warning.ok {
+  background: #0d2415;
+  border-color: #2ebd62;
+}
+
+button.disabled,
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+
+/* Import by URL */
+#importPreviewVideo,
+#importPreviewImage {
+  display: block;
+}
+
+#importPreviewImage[src=""] {
+  display: none;
+}

@@ -59,6 +59,36 @@ if (userPass !== password) {
     <button class="load-more" onclick="addBulkVideos()">Добавить весь пак</button>
   </div>
 
+
+  <div class="admin-card">
+    <h2>Импорт по ссылке</h2>
+
+    <label>Прямая ссылка на MP4</label>
+    <input id="importVideoUrl" class="input" placeholder="https://site.com/video.mp4">
+
+    <label>Ссылка на превью</label>
+    <input id="importImageUrl" class="input" placeholder="https://site.com/preview.jpg">
+
+    <label>Название</label>
+    <input id="importTitle" class="input" placeholder="Название ролика">
+
+    <label>Категория</label>
+    <select id="importCategory" class="input"></select>
+
+    <label>Теги через запятую</label>
+    <input id="importTags" class="input" placeholder="русское, новое, подборка">
+
+    <div class="admin-preview">
+      <video id="importPreviewVideo" controls playsinline></video>
+      <img id="importPreviewImage" alt="preview">
+    </div>
+
+    <div id="importStatus" class="duplicate-warning"></div>
+
+    <button class="dark-btn" onclick="previewImportUrl()">Проверить ссылку</button>
+    <button id="importAddBtn" class="load-more" onclick="addImportedVideo()">Добавить по ссылке</button>
+  </div>
+
   <div class="admin-card">
     <h2>Добавить одно видео</h2>
 
@@ -82,6 +112,8 @@ if (userPass !== password) {
     <label>Название</label>
     <input id="title" class="input" placeholder="Название видео">
 
+    <div id="duplicateWarning" class="duplicate-warning"></div>
+
     <label>Категория</label>
     <select id="category" class="input"></select>
 
@@ -98,7 +130,7 @@ if (userPass !== password) {
       <input id="premium" type="checkbox"> Premium
     </label>
 
-    <button class="load-more" onclick="addVideo()">Добавить видео</button>
+    <button id="singleAddBtn" class="load-more" onclick="addVideo()">Добавить видео</button>
     <button class="dark-btn" onclick="exportData()">Скачать новый data.js</button>
     <button class="dark-btn" onclick="clearMyVideos()">Очистить мои видео</button>
   </div>
@@ -130,6 +162,7 @@ function fillSelect(id) {
 
 fillSelect("category");
 fillSelect("bulkCategory");
+fillSelect("importCategory");
 
 const videoFile = document.getElementById("videoFile");
 const imageFile = document.getElementById("imageFile");
@@ -169,6 +202,8 @@ videoFile.addEventListener("change", () => {
   if (!titleInput.value) {
     titleInput.value = cleanTitle(file.name);
   }
+
+  checkSingleDuplicateLive();
 });
 
 previewVideo.addEventListener("loadedmetadata", () => {
@@ -184,6 +219,9 @@ imageFile.addEventListener("change", () => {
   imageInput.value = localImageUrl;
 });
 
+titleInput.addEventListener("input", checkSingleDuplicateLive);
+videoInput.addEventListener("input", checkSingleDuplicateLive);
+
 function getMyVideos() {
   return JSON.parse(localStorage.getItem("my_videos") || "[]");
 }
@@ -192,8 +230,92 @@ function saveMyVideos(list) {
   localStorage.setItem("my_videos", JSON.stringify(list));
 }
 
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function isDuplicateVideo(newItem, list) {
+  const all = [...list, ...videos];
+
+  return all.some(item => {
+    const sameTitle =
+      normalizeText(item.title) &&
+      normalizeText(item.title) === normalizeText(newItem.title);
+
+    const sameVideo =
+      item.video &&
+      newItem.video &&
+      String(item.video) === String(newItem.video);
+
+    const sameFileName =
+      item.fileName &&
+      newItem.fileName &&
+      normalizeText(item.fileName) === normalizeText(newItem.fileName);
+
+    const sameFileSize =
+      item.fileSize &&
+      newItem.fileSize &&
+      Number(item.fileSize) === Number(newItem.fileSize);
+
+    return sameVideo || sameFileName || sameTitle || sameFileSize;
+  });
+}
+
+function getCurrentSingleVideoDraft() {
+  const file = document.getElementById("videoFile").files[0];
+
+  return {
+    title: document.getElementById("title").value || "",
+    video: document.getElementById("video").value || "",
+    fileName: file ? file.name : "",
+    fileSize: file ? file.size : 0
+  };
+}
+
+function checkSingleDuplicateLive() {
+  const warning = document.getElementById("duplicateWarning");
+  const addBtn = document.getElementById("singleAddBtn");
+
+  if (!warning || !addBtn) return;
+
+  const draft = getCurrentSingleVideoDraft();
+
+  const hasAnyData =
+    draft.title ||
+    draft.video ||
+    draft.fileName ||
+    draft.fileSize;
+
+  if (!hasAnyData) {
+    warning.innerHTML = "";
+    warning.classList.remove("show");
+    addBtn.disabled = false;
+    addBtn.classList.remove("disabled");
+    return;
+  }
+
+  const duplicate = isDuplicateVideo(draft, getMyVideos());
+
+  if (duplicate) {
+    warning.innerHTML = "⚠️ Такой ролик уже есть. Повторно добавить нельзя.";
+    warning.classList.add("show");
+    addBtn.disabled = true;
+    addBtn.classList.add("disabled");
+  } else {
+    warning.innerHTML = "✅ Ролик новый, можно добавлять.";
+    warning.classList.add("show", "ok");
+    addBtn.disabled = false;
+    addBtn.classList.remove("disabled");
+  }
+}
+
 function addVideo() {
   const list = getMyVideos();
+
+  const file = document.getElementById("videoFile").files[0];
 
   const item = {
     id: Date.now(),
@@ -205,16 +327,25 @@ function addVideo() {
     views: document.getElementById("views").value || "0",
     premium: document.getElementById("premium").checked,
     date: new Date().toISOString().slice(0, 10),
+    fileName: file ? file.name : "",
+    fileSize: file ? file.size : 0,
     tags: document.getElementById("tags").value
       .split(",")
       .map(t => t.trim())
       .filter(Boolean)
   };
 
+  if (isDuplicateVideo(item, list)) {
+    alert("Такой ролик уже есть. Повторно не добавляю.");
+    checkSingleDuplicateLive();
+    return;
+  }
+
   list.unshift(item);
   saveMyVideos(list);
   renderAdmin();
   alert("Видео добавлено");
+  checkSingleDuplicateLive();
 }
 
 function addBulkVideos() {
@@ -235,6 +366,9 @@ function addBulkVideos() {
   const premium = document.getElementById("bulkPremium").checked;
   const list = getMyVideos();
 
+  let added = 0;
+  let skipped = 0;
+
   files.forEach((file, index) => {
     const videoUrl = URL.createObjectURL(file);
     const imageFile = images[index] || images[0];
@@ -242,7 +376,7 @@ function addBulkVideos() {
       ? URL.createObjectURL(imageFile)
       : "https://picsum.photos/600/380?random=" + Date.now() + index;
 
-    list.unshift({
+    const item = {
       id: Date.now() + index,
       title: cleanTitle(file.name) || "Без названия",
       category,
@@ -252,14 +386,117 @@ function addBulkVideos() {
       views: "0",
       premium,
       date: new Date().toISOString().slice(0, 10),
+      fileName: file.name,
+      fileSize: file.size,
       tags: tags.length ? tags : [category]
-    });
+    };
+
+    if (isDuplicateVideo(item, list)) {
+      skipped++;
+      return;
+    }
+
+    list.unshift(item);
+    added++;
   });
 
   saveMyVideos(list);
   renderAdmin();
-  alert("Добавлено видео: " + files.length);
+
+  alert("Добавлено: " + added + "\nПропущено дублей: " + skipped);
 }
+
+
+function guessTitleFromUrl(url) {
+  try {
+    const clean = decodeURIComponent(url.split("?")[0].split("/").pop() || "");
+    return clean.replace(/\.[^/.]+$/, "").replaceAll("_", " ").replaceAll("-", " ").trim();
+  } catch (e) {
+    return "";
+  }
+}
+
+function getImportDraft() {
+  const videoUrl = document.getElementById("importVideoUrl").value.trim();
+  const imageUrl = document.getElementById("importImageUrl").value.trim();
+
+  return {
+    id: Date.now(),
+    title: document.getElementById("importTitle").value.trim() || guessTitleFromUrl(videoUrl) || "Видео по ссылке",
+    category: document.getElementById("importCategory").value || "русское",
+    video: videoUrl,
+    image: imageUrl || "https://picsum.photos/600/380?random=" + Date.now(),
+    duration: "0:00",
+    views: "0",
+    premium: false,
+    date: new Date().toISOString().slice(0, 10),
+    fileName: guessTitleFromUrl(videoUrl),
+    fileSize: 0,
+    tags: document.getElementById("importTags").value
+      .split(",")
+      .map(t => t.trim())
+      .filter(Boolean)
+  };
+}
+
+function previewImportUrl() {
+  const status = document.getElementById("importStatus");
+  const videoUrl = document.getElementById("importVideoUrl").value.trim();
+  const imageUrl = document.getElementById("importImageUrl").value.trim();
+
+  if (!videoUrl) {
+    status.innerHTML = "⚠️ Вставь прямую ссылку на MP4.";
+    status.className = "duplicate-warning show";
+    return;
+  }
+
+  if (!document.getElementById("importTitle").value) {
+    document.getElementById("importTitle").value = guessTitleFromUrl(videoUrl);
+  }
+
+  document.getElementById("importPreviewVideo").src = videoUrl;
+  document.getElementById("importPreviewImage").src = imageUrl || "";
+
+  const draft = getImportDraft();
+
+  if (isDuplicateVideo(draft, getMyVideos())) {
+    status.innerHTML = "⚠️ Такой ролик уже есть. Повторно добавить нельзя.";
+    status.className = "duplicate-warning show";
+    document.getElementById("importAddBtn").disabled = true;
+    document.getElementById("importAddBtn").classList.add("disabled");
+    return;
+  }
+
+  status.innerHTML = "✅ Ссылка добавлена в предпросмотр. Можно добавлять.";
+  status.className = "duplicate-warning show ok";
+  document.getElementById("importAddBtn").disabled = false;
+  document.getElementById("importAddBtn").classList.remove("disabled");
+}
+
+function addImportedVideo() {
+  const list = getMyVideos();
+  const item = getImportDraft();
+
+  if (!item.video) {
+    alert("Вставь ссылку на MP4");
+    return;
+  }
+
+  if (isDuplicateVideo(item, list)) {
+    alert("Такой ролик уже есть. Повторно не добавляю.");
+    previewImportUrl();
+    return;
+  }
+
+  list.unshift(item);
+  saveMyVideos(list);
+  renderAdmin();
+  alert("Видео добавлено по ссылке");
+}
+
+document.getElementById("importVideoUrl").addEventListener("input", previewImportUrl);
+document.getElementById("importImageUrl").addEventListener("input", previewImportUrl);
+document.getElementById("importTitle").addEventListener("input", previewImportUrl);
 
 function renderAdmin() {
   const list = getMyVideos();

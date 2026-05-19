@@ -7,3 +7,5 @@
 - После добавления можно экспортировать новый data.js.
 
 Telegram уже заменён на sex_campos.
+
+Добавлена защита от дублей в admin.html: проверка по title, video URL, fileName и fileSize.
