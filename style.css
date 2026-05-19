@@ -834,3 +834,41 @@ label {
 .side-menu a[href*="t.me"] {
   border-color: #e73762;
 }
+
+
+/* Daily updates block */
+.daily-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: linear-gradient(135deg, #111, #2a0d16);
+  border: 1px solid #242833;
+  border-radius: 14px;
+  padding: 14px;
+  margin: 10px 8px 14px;
+}
+
+.daily-icon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e73762;
+  border-radius: 12px;
+  font-size: 24px;
+}
+
+.daily-info h2 {
+  margin: 0 0 4px;
+  font-size: 19px;
+  line-height: 1.2;
+}
+
+.daily-info p {
+  margin: 0;
+  color: #bdbdbd;
+  font-size: 13px;
+  line-height: 1.35;
+}
