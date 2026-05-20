@@ -59,6 +59,7 @@ async function loadPage() {
   try {
     const videoDoc = await getDoc(doc(db, "videos", id));
     if (!videoDoc.exists()) { content.innerHTML = "<h2>Видео не найдено</h2>"; return; }
+
     const video = { id: videoDoc.id, ...videoDoc.data() };
     document.title = video.title + " | SEX-campos";
     addToHistory(video);
@@ -68,22 +69,56 @@ async function loadPage() {
     const allVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     const related = getRelated(video, allVideos);
 
+    const models = video.models || [];
+    const tags = video.tags || [];
+    const cleanTags = tags.filter(tag => !models.includes(tag));
+
     content.innerHTML = `
       <div class="player-box"><video controls playsinline width="100%" poster="${video.image || ""}" id="videoPlayer"><source src="${video.video}" type="video/mp4"></video></div>
+
       <div class="video-info">
         <h1>${video.title || "Без названия"}</h1>
-        <div class="video-stats"><span>👁 ${video.views || "0"}</span><span>🟢 ${onlineNow(video.id)} смотрят сейчас</span><span>◴ ${video.duration || "0:00"}</span><span>🏷 ${video.category || "новое"}</span></div>
-        <div class="action-row"><button class="action-btn" onclick="toggleLike('${video.id}', this)">♡ Нравится</button><button class="action-btn" onclick="toggleFavorite('${video.id}', this)">☆ В избранное</button><button class="action-btn premium-action">⚡ Premium</button></div>
-        <div class="tags">${(video.tags || []).map(tag => `<span class="tag">+ ${tag}</span>`).join("")}</div>
+
+        <div class="video-stats">
+          <span>👁 ${video.views || "0"}</span>
+          <span>🟢 ${onlineNow(video.id)} смотрят сейчас</span>
+          <span>◴ ${video.duration || "0:00"}</span>
+          <span>🏷 ${video.category || "новое"}</span>
+        </div>
+
+        <div class="action-row">
+          <button class="action-btn" onclick="toggleLike('${video.id}', this)">♡ Нравится</button>
+          <button class="action-btn" onclick="toggleFavorite('${video.id}', this)">☆ В избранное</button>
+          <button class="action-btn premium-action">⚡ Premium</button>
+        </div>
+
+        ${models.length ? `
+          <div class="tags model-tags">
+            ${models.map(model => `<span class="tag model-tag">👤 ${model}</span>`).join("")}
+          </div>
+        ` : ""}
+
+        <div class="tags">
+          ${cleanTags.length ? cleanTags.map(tag => `<span class="tag">+ ${tag}</span>`).join("") : `<span class="tag">+ ${video.category || "новое"}</span>`}
+        </div>
       </div>
-      <div class="ad-box"><b>🔥 Девушки рядом</b><br>тут может быть ваша реклама<a class="ad-btn" href="https://t.me/sex_campos" target="_blank">Разместить рекламу</a></div>
+
+      <div class="ad-box">
+        <b>🔥 Девушки рядом</b><br>
+        тут может быть ваша реклама
+        <a class="ad-btn" href="https://t.me/sex_campos" target="_blank">Разместить рекламу</a>
+      </div>
+
       <div class="section-head"><h2>Похожие видео</h2><span class="count">подборка</span></div>
-      <div class="grid">${related.map(v => `
-        <a href="video.html?id=${v.id}" class="card">
-          <div class="thumb-wrap"><img class="thumb" src="${v.image || ""}" loading="lazy" />${v.premium ? '<span class="badge">Premium</span>' : ''}<span class="duration">${v.duration || "0:00"}</span></div>
-          <h3>${v.title || "Без названия"}</h3>
-          <div class="meta"><span>👁 ${v.views || "0"}</span><span>🟢 ${onlineNow(v.id)} смотрят</span></div>
-        </a>`).join("")}</div>
+
+      <div class="grid">
+        ${related.map(v => `
+          <a href="video.html?id=${v.id}" class="card">
+            <div class="thumb-wrap"><img class="thumb" src="${v.image || ""}" loading="lazy" />${v.premium ? '<span class="badge">Premium</span>' : ''}<span class="duration">${v.duration || "0:00"}</span></div>
+            <h3>${v.title || "Без названия"}</h3>
+            <div class="meta"><span>👁 ${v.views || "0"}</span><span>🟢 ${onlineNow(v.id)} смотрят</span></div>
+          </a>`).join("")}
+      </div>
     `;
   } catch (error) {
     content.innerHTML = `<h2>Ошибка Firebase</h2><p>${error.message}</p>`;

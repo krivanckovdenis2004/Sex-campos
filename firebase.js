@@ -1,5 +1,5 @@
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import {
   getFirestore,
   collection,
@@ -10,7 +10,8 @@ import {
   doc,
   query,
   orderBy,
-  serverTimestamp
+  serverTimestamp,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -35,6 +36,7 @@ export {
   deleteDoc,
   doc,
   query,
-  orderBy,
-  serverTimestamp
+ orderBy,
+  serverTimestamp,
+  updateDoc
 };
