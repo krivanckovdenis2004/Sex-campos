@@ -214,3 +214,20 @@ async function loadVideos() {
 searchInput?.addEventListener("input", filterVideos);
 
 loadVideos();
+window.enterSite = function () {
+  const ageGate = document.getElementById("ageGate");
+
+  if (ageGate) {
+    ageGate.style.display = "none";
+  }
+
+  localStorage.setItem("age_ok", "yes");
+};
+
+if (localStorage.getItem("age_ok") === "yes") {
+  const ageGate = document.getElementById("ageGate");
+
+  if (ageGate) {
+    ageGate.style.display = "none";
+  }
+}
