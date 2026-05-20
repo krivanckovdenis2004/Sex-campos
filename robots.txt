@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://YOUR_USERNAME.github.io/SEX-campos/sitemap.xml
+Sitemap: https://sex-campos.online/sitemap.xml
