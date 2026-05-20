@@ -36,7 +36,7 @@ export {
   deleteDoc,
   doc,
   query,
- orderBy,
+  orderBy,
   serverTimestamp,
   updateDoc
 };

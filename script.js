@@ -9,241 +9,208 @@ import {
 const grid = document.getElementById("videoGrid");
 const searchInput = document.getElementById("searchInput");
 const categoryList = document.getElementById("categoryList");
-const loadMoreBtn = document.getElementById("loadMoreBtn");
-const videoCount = document.getElementById("videoCount");
 const pageTitle = document.getElementById("pageTitle");
+const videoCount = document.getElementById("videoCount");
 
 let allVideos = [];
-let currentCategory = "все";
 let currentSort = "popular";
-let visibleCount = 12;
-const step = 12;
+let currentTag = "all";
 
-const categories = [
-  "все",
-  "русское",
-  "грязные разговоры",
-  "с разговорами",
-  "pov",
-  "измена",
-  "красивое",
-  "соблазнение девушки",
-  "непостановочное",
-  "спящие",
-  "крупным планом",
-  "чулки",
-  "мжм",
-  "жмж",
-  "бдсм",
-  "сексвайф",
-  "в поезде",
-  "в тренде",
-  "новые"
-];
-
-window.enterSite = function () {
-  document.getElementById("ageGate").style.display = "none";
-  localStorage.setItem("age_ok", "yes");
+const randomViews = () => {
+  return Math.floor(Math.random() * 900000) + 10000;
 };
 
-if (localStorage.getItem("age_ok") === "yes" && document.getElementById("ageGate")) {
-  document.getElementById("ageGate").style.display = "none";
-}
-
-window.openMenu = function () {
-  document.getElementById("menuOverlay")?.classList.add("show");
-  document.getElementById("sideMenu")?.classList.add("show");
+const randomWatching = () => {
+  return Math.floor(Math.random() * 500) + 20;
 };
 
-window.closeMenu = function () {
-  document.getElementById("menuOverlay")?.classList.remove("show");
-  document.getElementById("sideMenu")?.classList.remove("show");
-};
+function normalizeTags(tags) {
+  if (!tags) return [];
 
-function onlineNow(id) {
-  return 20 + (String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 17) % 480;
+  if (Array.isArray(tags)) return tags;
+
+  return tags
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
 }
 
-function viewsToNumber(value) {
-  const text = String(value || "0").toUpperCase().replace(",", ".");
-  const num = parseFloat(text) || 0;
+function createCard(v) {
+  const card = document.createElement("a");
 
-  if (text.includes("M")) return num * 1000000;
-  if (text.includes("K")) return num * 1000;
+  card.href = `video.html?id=${v.id}`;
+  card.className = "video-card";
 
-  return num;
-}
+  const views = randomViews();
+  const watching = randomWatching();
 
-function isTrending(video) {
-  return video.premium || String(video.category || "").includes("тренд");
-}
+  const tags = normalizeTags(v.tags);
 
-function renderCategories() {
-  const buttons = categories.map(category => `
-    <button
-      class="category-btn ${category === currentCategory ? "active" : ""}"
-      onclick="setCategory('${category}')"
-    >
-      ${category}
-    </button>
-  `).join("");
+  card.innerHTML = `
+    <div class="thumb-wrap">
 
-  categoryList.innerHTML = `
-    <div class="category-track">${buttons}${buttons}</div>
-    <div class="category-track reverse">${buttons}${buttons}</div>
+      <img
+        src="${v.image || "logo.jpg"}"
+        class="thumb"
+      >
+
+      <div class="duration">
+        ${v.duration || "13:43"}
+      </div>
+
+    </div>
+
+    <div class="video-info">
+
+      <h3>
+        ${v.title || "Без названия"}
+      </h3>
+
+      <div class="meta">
+        👁 ${views}
+        <span class="watching">
+          🟢 ${watching} смотрят
+        </span>
+      </div>
+
+      <div class="tag-list">
+        ${tags
+          .slice(0, 5)
+          .map(
+            t => `
+            <span class="tag">
+              + ${t}
+            </span>
+          `
+          )
+          .join("")}
+      </div>
+
+    </div>
   `;
+
+  return card;
 }
 
-function getFilteredVideos() {
-  const text = searchInput.value.toLowerCase().trim();
+function renderVideos(list) {
+  if (!grid) return;
 
-  let list = allVideos.filter(video => {
-    const matchesSearch =
-      String(video.title || "").toLowerCase().includes(text) ||
-      String(video.category || "").toLowerCase().includes(text) ||
-      (video.tags || []).join(" ").toLowerCase().includes(text);
+  grid.innerHTML = "";
 
-    const matchesCategory =
-      currentCategory === "все" ||
-      video.category === currentCategory ||
-      (video.tags || []).includes(currentCategory);
+  videoCount.textContent = `${list.length} видео`;
 
-    return matchesSearch && matchesCategory;
+  list.forEach(v => {
+    grid.appendChild(createCard(v));
+  });
+}
+
+function buildTags() {
+  if (!categoryList) return;
+
+  const tags = new Set();
+
+  allVideos.forEach(v => {
+    normalizeTags(v.tags).forEach(t => tags.add(t));
   });
 
-  if (currentSort === "popular") {
-    list = list.sort((a, b) => viewsToNumber(b.views) - viewsToNumber(a.views));
+  categoryList.innerHTML = `
+    <button class="cat-btn active">
+      + все
+    </button>
+  `;
+
+  [...tags]
+    .slice(0, 30)
+    .forEach(tag => {
+      const btn = document.createElement("button");
+
+      btn.className = "cat-btn";
+
+      btn.textContent = `+ ${tag}`;
+
+      btn.onclick = () => {
+        currentTag = tag;
+
+        document
+          .querySelectorAll(".cat-btn")
+          .forEach(b => b.classList.remove("active"));
+
+        btn.classList.add("active");
+
+        filterVideos();
+      };
+
+      categoryList.appendChild(btn);
+    });
+}
+
+function filterVideos() {
+  let filtered = [...allVideos];
+
+  const search = searchInput?.value
+    ?.toLowerCase()
+    ?.trim();
+
+  if (search) {
+    filtered = filtered.filter(v => {
+      const tags = normalizeTags(v.tags).join(" ");
+
+      return (
+        v.title?.toLowerCase().includes(search) ||
+        tags.toLowerCase().includes(search)
+      );
+    });
+  }
+
+  if (currentTag !== "all") {
+    filtered = filtered.filter(v =>
+      normalizeTags(v.tags).includes(currentTag)
+    );
   }
 
   if (currentSort === "new") {
-    list = list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    filtered.reverse();
+
+    pageTitle.textContent = "Новые видео";
   }
 
   if (currentSort === "trend") {
-    list = list.filter(video => isTrending(video));
+    filtered.sort(() => Math.random() - 0.5);
+
+    pageTitle.textContent = "🔥 В тренде";
   }
 
-  if (currentSort === "premium") {
-    list = list.filter(video => video.premium);
+  if (currentSort === "popular") {
+    pageTitle.textContent = "Релевантные видео";
   }
 
-  return list;
+  renderVideos(filtered);
 }
 
-function renderVideos() {
-  const list = getFilteredVideos();
-  const visible = list.slice(0, visibleCount);
+window.setSort = type => {
+  currentSort = type;
 
-  videoCount.innerText = `${list.length} видео`;
+  filterVideos();
+};
 
-  if (!visible.length) {
-    grid.innerHTML = `
-      <div class="empty-state">
-        <h3>Пока нет видео</h3>
-        <p>Добавь ролики через Admin — они сохранятся в Firebase и будут видны всем.</p>
-      </div>
-    `;
+async function loadVideos() {
+  const q = query(
+    collection(db, "videos"),
+    orderBy("createdAt", "desc")
+  );
 
-    loadMoreBtn.style.display = "none";
-    return;
-  }
+  const snap = await getDocs(q);
 
-  grid.innerHTML = visible.map((video, index) => {
-    const adCard = index > 0 && index % 8 === 0 ? `
-      <a href="https://t.me/sex_campos" target="_blank" class="ad-card">
-        <div class="ad-card-inner">
-          <div class="ad-title">🔥 Тут может быть ваша реклама</div>
-          <div class="ad-text">Разместить рекламу на сайте</div>
-          <div class="ad-button">Написать в Telegram</div>
-        </div>
-      </a>
-    ` : "";
+  allVideos = snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 
-    return adCard + `
-      <a href="video.html?id=${video.id}" class="card">
-        <div class="thumb-wrap">
-          <img class="thumb" src="${video.image || ""}" loading="lazy" />
-          ${video.premium ? '<span class="badge">Premium</span>' : ""}
-          ${isTrending(video) ? '<span class="trend-badge">🔥 Trending</span>' : ""}
-          <span class="duration">${video.duration || "0:00"}</span>
-        </div>
+  buildTags();
 
-        <h3>${video.title || "Без названия"}</h3>
-
-        <div class="meta">
-          <span>👁 ${video.views || "0"}</span>
-          <span>🟢 ${onlineNow(video.id)} смотрят</span>
-          <span>🏷 ${video.category || "новое"}</span>
-        </div>
-      </a>
-    `;
-  }).join("");
-
-  loadMoreBtn.style.display = visible.length < list.length ? "block" : "none";
+  filterVideos();
 }
 
-window.setCategory = function (category) {
-  currentCategory = category;
-  visibleCount = step;
-  pageTitle.innerText = category === "все" ? "Релевантные видео" : category;
+searchInput?.addEventListener("input", filterVideos);
 
-  renderCategories();
-  renderVideos();
-};
-
-window.setSort = function (sort) {
-  currentSort = sort;
-  visibleCount = step;
-
-  if (sort === "popular") pageTitle.innerText = "Релевантные видео";
-  if (sort === "new") pageTitle.innerText = "Новые видео";
-  if (sort === "trend") pageTitle.innerText = "В тренде";
-
-  renderVideos();
-};
-
-window.setPremium = function () {
-  currentSort = "premium";
-  visibleCount = step;
-  pageTitle.innerText = "Premium";
-
-  renderVideos();
-};
-
-searchInput.addEventListener("input", () => {
-  visibleCount = step;
-  renderVideos();
-});
-
-loadMoreBtn.addEventListener("click", () => {
-  visibleCount += step;
-  renderVideos();
-});
-
-async function loadVideosFromFirebase() {
-  try {
-    const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-
-    allVideos = snap.docs.map(docSnap => ({
-      id: docSnap.id,
-      ...docSnap.data()
-    }));
-
-    renderCategories();
-    renderVideos();
-  } catch (error) {
-    console.error(error);
-
-    videoCount.innerText = "ошибка Firebase";
-
-    grid.innerHTML = `
-      <div class="empty-state">
-        <h3>Ошибка Firebase</h3>
-        <p>${error.message}</p>
-      </div>
-    `;
-  }
-}
-
-loadVideosFromFirebase();
+loadVideos();

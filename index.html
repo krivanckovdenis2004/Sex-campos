@@ -3,77 +3,91 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>SEX-campos — русское видео, POV, домашнее, reels</title>
-
-<meta name="description" content="SEX-campos — подборки видео, POV, домашнее, reels, новые ролики каждый день.">
-
-<meta name="keywords" content="видео, reels, домашнее, POV, русское, подборки, новые ролики">
-
+<title>SEX-campos — русские видео, POV, домашнее, Reels</title>
+<meta name="description" content="SEX-campos — новые ролики каждый день: русские видео, POV, домашнее, Reels, категории, модели и подборки.">
+<meta name="keywords" content="видео, reels, домашнее, POV, русское, подборки, новые ролики, модели, категории">
 <meta name="robots" content="index, follow">
-
 <meta property="og:title" content="SEX-campos">
 <meta property="og:description" content="Новые ролики каждый день">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sex-campos.online">
 <meta property="og:image" content="https://sex-campos.online/preview.jpg">
-
 <meta name="theme-color" content="#ff2d6f">
-
+<link rel="icon" href="favicon.png">
 <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
+<div class="age-gate" id="ageGate">
+  <div class="age-box">
+    <h1>18+</h1>
+    <p>Сайт предназначен только для совершеннолетних.</p>
+    <button onclick="enterSite()">Мне есть 18</button>
+  </div>
+</div>
+
 <header class="topbar">
-  <div class="logo">SEX-campos</div>
+  <div class="logo-row">
+    <a class="brand" href="index.html" aria-label="SEX-campos">
+      <img class="brand-logo" src="logo.png" alt="SEX-campos" onerror="this.style.display='none'">
+      <span><b>SEX</b>-campos</span>
+    </a>
+    <div class="top-icons"><span>💬</span><span>👤</span><span>⚡</span><span>🔎</span></div>
+  </div>
+  <button class="menu-btn" onclick="openMenu()">☰ Открыть меню</button>
 </header>
 
-<section class="seo-text" style="padding:20px;color:white;">
-<h2>Новые ролики каждый день</h2>
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+<aside class="side-menu" id="sideMenu">
+  <div class="side-head"><div><b>SEX-campos</b><span>меню сайта</span></div><button onclick="closeMenu()">×</button></div>
+  <a href="index.html">🏠 Главная</a>
+  <a href="reels.html">📱 Reels</a>
+  <a href="admin.html">⚙️ Admin</a>
+  <a href="https://t.me/sex_campos" target="_blank">📢 Разместить рекламу</a>
+  <a href="dmca.html">📄 DMCA</a>
+  <a href="18.html">🔞 18+</a>
+  <a href="terms.html">📜 Правила</a>
+  <a href="privacy.html">🔐 Privacy</a>
+</aside>
 
-<p>
-На SEX-campos публикуются новые подборки роликов, POV, reels и популярные видео.
-Удобный поиск по тегам, категориям и моделям помогает быстро находить интересные подборки.
-</p>
-</section>
+<main class="page-wrap">
+  <section class="hero-seo">
+    <div class="hero-fire">🔥</div>
+    <div>
+      <h1>Новые ролики каждый день</h1>
+      <p>На SEX-campos публикуются новые подборки, POV, Reels и популярные видео. Удобный поиск по тегам, категориям и моделям помогает быстрее найти нужную подборку.</p>
+    </div>
+  </section>
 
-<main>
+  <section class="controls-card">
+    <div class="sort-row">
+      <button class="sort-btn active" onclick="setSort('popular')">👍 релевантные</button>
+      <button class="sort-btn" onclick="setSort('new')">◴ новые</button>
+      <button class="sort-btn" onclick="setSort('trend')">🔥 в тренде</button>
+      <button class="sort-btn" onclick="setPremium()">⚡ premium</button>
+    </div>
+    <input id="searchInput" class="search" type="text" placeholder="Поиск видео, тегов, моделей...">
+    <div class="category-scroll" id="categoryList"></div>
+  </section>
 
-<div id="categoryList"></div>
+  <a class="top-ad" href="https://t.me/sex_campos" target="_blank">🔥 Тут может быть ваша реклама</a>
 
-<input
-  id="searchInput"
-  class="search-input"
-  placeholder="Поиск видео..."
->
+  <div class="section-head">
+    <h2 id="pageTitle">Релевантные видео</h2>
+    <span id="videoCount" class="count">загрузка...</span>
+  </div>
 
-<div class="sort-buttons">
-  <button onclick="setSort('popular')">👍 релевантные</button>
-  <button onclick="setSort('new')">🕘 новые</button>
-  <button onclick="setSort('trend')">🔥 в тренде</button>
-</div>
-
-<div class="section-head">
-  <h2 id="pageTitle">Релевантные видео</h2>
-  <span id="videoCount">0 видео</span>
-</div>
-
-<div class="grid" id="videoGrid"></div>
-
-<button id="loadMoreBtn" class="load-more">
-Показать ещё
-</button>
-
+  <div class="grid" id="videoGrid"></div>
+  <button id="loadMoreBtn" class="load-more">Показать ещё</button>
 </main>
 
 <div class="bottom-menu">
   <a href="index.html">Главная</a>
   <a href="reels.html">Reels</a>
+  <a href="#" onclick="setSort('new')">Новые</a>
   <a href="admin.html">Admin</a>
 </div>
 
 <script type="module" src="script.js"></script>
-
 </body>
 </html>
