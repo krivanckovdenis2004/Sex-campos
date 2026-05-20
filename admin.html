@@ -8,6 +8,12 @@
   <style>
     .admin-card-link{display:block;color:inherit;text-decoration:none}
     .delete-btn{width:100%;margin-top:8px;background:#321018;border:1px solid #5a1c2b;color:#fff;padding:10px;border-radius:10px;font-weight:700}
+    .tag-section{border-top:1px dashed #2a2d35;padding-top:10px;margin-top:10px}
+    .tag-section-title{font-size:14px;font-weight:800;color:#ddd;margin:0 0 8px}
+    .quick-row.wrap{flex-wrap:wrap;overflow:visible;padding-bottom:0}
+    .quick-row.wrap button{font-size:12px;padding:7px 9px}
+    .auto-status{display:none;margin:10px 0;padding:10px;border-radius:10px;background:#0d2415;border:1px solid #2ebd62;color:#fff;font-size:13px}
+    .auto-status.show{display:block}
   </style>
 </head>
 <body>
@@ -15,8 +21,24 @@
 <script>
 const password = "12345";
 const userPass = prompt("Введите пароль");
+
 if (userPass !== password) {
-  document.body.innerHTML = `<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>`;
+  document.body.innerHTML = `
+    <div style="
+      background:#000;
+      color:#fff;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Arial;
+      font-size:24px;
+      text-align:center;
+      padding:20px;
+    ">
+      Доступ запрещён
+    </div>
+  `;
 }
 </script>
 
@@ -26,9 +48,20 @@ if (userPass !== password) {
 </header>
 
 <main class="admin-page">
+
+  <div class="admin-card">
+    <h2>Автозаполнение по ссылке</h2>
+    <p class="admin-note">Вставь ссылку на страницу/MP4. Админка попробует взять название, моделей, тип и теги из текста ссылки.</p>
+
+    <label>Ссылка на ролик или MP4</label>
+    <input id="sourceUrl" class="input" placeholder="https://site.com/video/russkoe-kiss-cat...">
+
+    <button class="dark-btn" onclick="smartFill()">Заполнить название и теги</button>
+    <div id="autoStatus" class="auto-status"></div>
+  </div>
+
   <div class="admin-card">
     <h2>Добавить ролик в Firebase</h2>
-    <p class="admin-note">Для постоянного хранения вставляй MP4-ссылку и ссылку на превью. Файлы с телефона напрямую пока не грузим в Firebase Storage.</p>
 
     <label>Ссылка на MP4</label>
     <input id="video" class="input" placeholder="https://site.com/video.mp4">
@@ -43,22 +76,38 @@ if (userPass !== password) {
 
     <label>Название</label>
     <input id="title" class="input" placeholder="Название видео">
+
+    <label>Модели через запятую</label>
+    <input id="models" class="input" placeholder="Kiss Cat, Shalina Devine">
+
     <div id="duplicateWarning" class="duplicate-warning"></div>
 
     <label>Категория</label>
     <select id="category" class="input"></select>
+
     <div class="quick-row" id="quickCategories"></div>
 
     <label>Теги через запятую</label>
     <input id="tags" class="input" placeholder="русское, pov, с разговорами">
-    <div class="quick-row" id="quickTags"></div>
+
+    <div id="tagGroups"></div>
 
     <div class="two-col">
-      <div><label>Длительность</label><input id="duration" class="input" placeholder="12:45"></div>
-      <div><label>Просмотры</label><input id="views" class="input" placeholder="0"></div>
+      <div>
+        <label>Длительность</label>
+        <input id="duration" class="input" placeholder="12:45">
+      </div>
+
+      <div>
+        <label>Просмотры</label>
+        <input id="views" class="input" placeholder="0">
+      </div>
     </div>
 
-    <label class="check"><input id="premium" type="checkbox"> Premium</label>
+    <label class="check">
+      <input id="premium" type="checkbox"> Premium
+    </label>
+
     <button id="singleAddBtn" class="load-more">Добавить в Firebase</button>
   </div>
 
@@ -67,40 +116,395 @@ if (userPass !== password) {
     <div class="admin-stats" id="adminStats">загрузка...</div>
     <div class="grid compact-grid" id="adminGrid"></div>
   </div>
+
 </main>
 
 <script type="module">
-import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "./firebase.js";
+import {
+  db,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  serverTimestamp
+} from "./firebase.js";
 
-const categoriesRu = ["русское","грязные разговоры","с разговорами","pov","измена","красивое","соблазнение девушки","непостановочное","спящие","крупным планом","чулки","мжм","жмж","бдсм","сексвайф","в поезде","в тренде","новые"];
-const quickTags = ["русское","грязные разговоры","с разговорами","спящие","измена","pov","непостановочное","красивое","соблазнение девушки"];
+const categoriesRu = [
+  "русское",
+  "женский куколдинг",
+  "грязные разговоры",
+  "с разговорами",
+  "свингеры",
+  "измена",
+  "красивое",
+  "соблазнение парня",
+  "соблазнение девушки",
+  "pov",
+  "непостановочное",
+  "спящие",
+  "крупным планом",
+  "чулки",
+  "мжм",
+  "жмж",
+  "бдсм",
+  "сексвайф",
+  "в поезде",
+  "в тренде",
+  "новые"
+];
+
+const tagGroups = [
+  {
+    title: "Модели",
+    target: "models",
+    tags: ["Kiss Cat", "Shalina Devine"]
+  },
+  {
+    title: "Действия",
+    tags: [
+      "мастурбируют девушке",
+      "дрочат парню",
+      "красивый минет",
+      "меж сисек",
+      "лежа на спине",
+      "куни",
+      "минет",
+      "взаимная мастурбация",
+      "одновременный оргазм"
+    ]
+  },
+  {
+    title: "Тип",
+    tags: [
+      "русское",
+      "женский куколдинг",
+      "грязные разговоры",
+      "с разговорами",
+      "свингеры",
+      "измена",
+      "красивое",
+      "соблазнение парня",
+      "соблазнение девушки",
+      "pov",
+      "непостановочное"
+    ]
+  },
+  {
+    title: "Отношения",
+    tags: ["муж и жена", "пара"]
+  },
+  {
+    title: "Внешность",
+    tags: [
+      "красивое белье",
+      "высокие девушки",
+      "загорелые",
+      "худенькие",
+      "в халате",
+      "в пеньюаре",
+      "смуглые",
+      "блондинки",
+      "русые",
+      "шатенки"
+    ]
+  },
+  {
+    title: "Тело",
+    tags: [
+      "упругие сиськи",
+      "большие сиськи",
+      "красивые сиськи",
+      "с тату",
+      "интимные стрижки",
+      "силиконовая грудь",
+      "красивые киски",
+      "ножки"
+    ]
+  },
+  {
+    title: "О мужчине",
+    tags: ["большие члены", "красивые члены"]
+  },
+  {
+    title: "Места",
+    tags: ["домашнее", "в спальне", "на диване"]
+  },
+  {
+    title: "Финалы",
+    tags: ["кончают внутрь", "оргазм"]
+  },
+  {
+    title: "Типаж",
+    tags: ["мамочка", "милашки", "горячие", "шлюха"]
+  }
+];
+
 const allFirebaseVideos = [];
 
+const sourceUrlInput = document.getElementById("sourceUrl");
 const videoInput = document.getElementById("video");
 const imageInput = document.getElementById("image");
 const previewVideo = document.getElementById("previewVideo");
 const previewImage = document.getElementById("previewImage");
 const titleInput = document.getElementById("title");
+const modelsInput = document.getElementById("models");
 const durationInput = document.getElementById("duration");
+const tagsInput = document.getElementById("tags");
 
-document.getElementById("category").innerHTML = categoriesRu.map(c => `<option value="${c}">${c}</option>`).join("");
-document.getElementById("quickCategories").innerHTML = categoriesRu.slice(0, 9).map(c => `<button type="button" onclick="setCategory('${c}')">${c}</button>`).join("");
-document.getElementById("quickTags").innerHTML = quickTags.map(tag => `<button type="button" onclick="addTag('${tag}')">+ ${tag}</button>`).join("");
+document.getElementById("category").innerHTML = categoriesRu.map(c =>
+  `<option value="${c}">${c}</option>`
+).join("");
 
-window.setCategory = function (category) { document.getElementById("category").value = category; };
-window.addTag = function (tag) {
-  const input = document.getElementById("tags");
-  const current = input.value.split(",").map(t => t.trim()).filter(Boolean);
-  if (!current.includes(tag)) current.push(tag);
-  input.value = current.join(", ");
+document.getElementById("quickCategories").innerHTML = categoriesRu.slice(0, 10).map(c =>
+  `<button type="button" onclick="setCategory('${c}')">${c}</button>`
+).join("");
+
+document.getElementById("tagGroups").innerHTML = tagGroups.map(group => `
+  <div class="tag-section">
+    <div class="tag-section-title">⊙ ${group.title}</div>
+    <div class="quick-row wrap">
+      ${group.tags.map(tag => `
+        <button type="button" onclick="${group.target === "models" ? `addModel('${tag}')` : `addTag('${tag}')`}">
+          ${group.target === "models" ? tag : "+ " + tag}
+        </button>
+      `).join("")}
+    </div>
+  </div>
+`).join("");
+
+window.setCategory = function (category) {
+  document.getElementById("category").value = category;
+  addTag(category);
 };
 
-function normalizeText(value) { return String(value || "").toLowerCase().trim().replace(/\s+/g, " "); }
+window.addTag = function (tag) {
+  const current = tagsInput.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  if (!current.includes(tag)) current.push(tag);
+
+  tagsInput.value = current.join(", ");
+};
+
+window.addModel = function (model) {
+  const current = modelsInput.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  if (!current.includes(model)) current.push(model);
+
+  modelsInput.value = current.join(", ");
+};
+
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function cleanTextFromUrl(url) {
+  return decodeURIComponent(String(url || ""))
+    .replace(/^https?:\/\//, "")
+    .replace(/[?#].*$/, "")
+    .replace(/\.[a-z0-9]{2,5}$/i, "")
+    .replace(/[\/_\-.+]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function titleFromUrl(url) {
+  const parts = cleanTextFromUrl(url).split(" ");
+  const lastWords = parts.slice(Math.max(0, parts.length - 10));
+  return lastWords.join(" ").trim() || "Без названия";
+}
+
+function guessCategory(text) {
+  const t = normalizeText(text);
+
+  const rules = [
+    ["куколдинг", "женский куколдинг"],
+    ["cuckold", "женский куколдинг"],
+    ["грязн", "грязные разговоры"],
+    ["talk", "с разговорами"],
+    ["разговор", "с разговорами"],
+    ["свинг", "свингеры"],
+    ["измен", "измена"],
+    ["cheat", "измена"],
+    ["pov", "pov"],
+    ["рус", "русское"],
+    ["russian", "русское"],
+    ["home", "домашнее"],
+    ["дом", "домашнее"],
+    ["bdsm", "бдсм"],
+    ["бдсм", "бдсм"],
+    ["мжм", "мжм"],
+    ["жмж", "жмж"],
+    ["train", "в поезде"],
+    ["поезд", "в поезде"]
+  ];
+
+  for (const [needle, category] of rules) {
+    if (t.includes(needle)) return category;
+  }
+
+  return "русское";
+}
+
+function smartTagsFromText(text) {
+  const t = normalizeText(text);
+
+  const dictionary = [
+    "русское",
+    "женский куколдинг",
+    "грязные разговоры",
+    "с разговорами",
+    "свингеры",
+    "измена",
+    "красивое",
+    "соблазнение парня",
+    "соблазнение девушки",
+    "pov",
+    "непостановочное",
+    "спящие",
+    "мастурбируют девушке",
+    "дрочат парню",
+    "красивый минет",
+    "куни",
+    "минет",
+    "муж и жена",
+    "пара",
+    "красивое белье",
+    "высокие девушки",
+    "загорелые",
+    "худенькие",
+    "в халате",
+    "в пеньюаре",
+    "смуглые",
+    "упругие сиськи",
+    "большие сиськи",
+    "красивые сиськи",
+    "с тату",
+    "интимные стрижки",
+    "силиконовая грудь",
+    "красивые киски",
+    "большие члены",
+    "красивые члены",
+    "домашнее",
+    "в спальне",
+    "на диване",
+    "кончают внутрь",
+    "оргазм",
+    "блондинки",
+    "русые",
+    "шатенки",
+    "мамочка",
+    "милашки",
+    "горячие",
+    "шлюха",
+    "взаимная мастурбация",
+    "ножки",
+    "одновременный оргазм"
+  ];
+
+  const aliases = {
+    "kiss cat": "Kiss Cat",
+    "shalina devine": "Shalina Devine",
+    "russian": "русское",
+    "rus": "русское",
+    "cuckold": "женский куколдинг",
+    "dirty talk": "грязные разговоры",
+    "talking": "с разговорами",
+    "cheating": "измена",
+    "cheat": "измена",
+    "beautiful": "красивое",
+    "home": "домашнее",
+    "bedroom": "в спальне",
+    "sofa": "на диване",
+    "orgasm": "оргазм",
+    "blonde": "блондинки",
+    "brunette": "шатенки",
+    "pov": "pov"
+  };
+
+  const found = [];
+
+  dictionary.forEach(tag => {
+    if (t.includes(normalizeText(tag))) found.push(tag);
+  });
+
+  Object.entries(aliases).forEach(([needle, tag]) => {
+    if (t.includes(needle) && !found.includes(tag)) found.push(tag);
+  });
+
+  return found;
+}
+
+function smartModelsFromText(text) {
+  const t = normalizeText(text);
+  const models = [];
+
+  ["Kiss Cat", "Shalina Devine"].forEach(model => {
+    if (t.includes(normalizeText(model))) models.push(model);
+  });
+
+  return models;
+}
+
+window.smartFill = function () {
+  const url = sourceUrlInput.value.trim();
+
+  if (!url) {
+    alert("Вставь ссылку");
+    return;
+  }
+
+  const text = cleanTextFromUrl(url);
+  const title = titleFromUrl(url);
+  const category = guessCategory(text);
+  const tags = smartTagsFromText(text);
+  const models = smartModelsFromText(text);
+
+  if (!videoInput.value && /\.(mp4|webm|m3u8)(\?|#|$)/i.test(url)) {
+    videoInput.value = url;
+    previewVideo.src = url;
+  }
+
+  if (!titleInput.value) titleInput.value = title;
+  document.getElementById("category").value = category;
+  addTag(category);
+
+  tags.forEach(tag => {
+    if (tag === "Kiss Cat" || tag === "Shalina Devine") addModel(tag);
+    else addTag(tag);
+  });
+
+  models.forEach(addModel);
+
+  document.getElementById("autoStatus").innerHTML =
+    `✅ Заполнено: название, категория и теги. Проверь MP4-ссылку и превью перед сохранением.`;
+  document.getElementById("autoStatus").classList.add("show");
+
+  checkDuplicateLive();
+};
 
 function isDuplicateVideo(newItem) {
   return allFirebaseVideos.some(item => {
-    const sameTitle = normalizeText(item.title) && normalizeText(item.title) === normalizeText(newItem.title);
-    const sameVideo = item.video && newItem.video && String(item.video) === String(newItem.video);
+    const sameTitle =
+      normalizeText(item.title) &&
+      normalizeText(item.title) === normalizeText(newItem.title);
+
+    const sameVideo =
+      item.video &&
+      newItem.video &&
+      String(item.video) === String(newItem.video);
+
     return sameVideo || sameTitle;
   });
 }
@@ -108,7 +512,11 @@ function isDuplicateVideo(newItem) {
 function checkDuplicateLive() {
   const warning = document.getElementById("duplicateWarning");
   const addBtn = document.getElementById("singleAddBtn");
-  const draft = { title: titleInput.value, video: videoInput.value };
+
+  const draft = {
+    title: titleInput.value,
+    video: videoInput.value
+  };
 
   if (!draft.title && !draft.video) {
     warning.innerHTML = "";
@@ -134,45 +542,81 @@ function renderPreview() {
   if (imageInput.value) previewImage.src = imageInput.value;
 }
 
-videoInput.addEventListener("input", () => { renderPreview(); checkDuplicateLive(); });
+videoInput.addEventListener("input", () => {
+  renderPreview();
+  checkDuplicateLive();
+});
+
 imageInput.addEventListener("input", renderPreview);
 titleInput.addEventListener("input", checkDuplicateLive);
+
 document.getElementById("singleAddBtn").addEventListener("click", addVideo);
 
 async function addVideo() {
+  const modelList = modelsInput.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
+  const tagList = tagsInput.value
+    .split(",")
+    .map(t => t.trim())
+    .filter(Boolean);
+
   const item = {
     title: titleInput.value || "Без названия",
+    models: modelList,
     category: document.getElementById("category").value || "русское",
     video: videoInput.value.trim(),
+    sourceUrl: sourceUrlInput.value.trim(),
     image: imageInput.value.trim() || "https://picsum.photos/600/380?random=" + Date.now(),
     duration: durationInput.value || "0:00",
     views: document.getElementById("views").value || "0",
     premium: document.getElementById("premium").checked,
     date: new Date().toISOString().slice(0, 10),
-    tags: document.getElementById("tags").value.split(",").map(t => t.trim()).filter(Boolean),
+    tags: [...new Set([...modelList, ...tagList])],
     createdAt: Date.now(),
     createdAtServer: serverTimestamp()
   };
 
-  if (!item.video) { alert("Вставь ссылку на MP4"); return; }
-  if (isDuplicateVideo(item)) { alert("Такой ролик уже есть. Повторно не добавляю."); return; }
+  if (!item.video) {
+    alert("Вставь прямую ссылку на MP4");
+    return;
+  }
+
+  if (isDuplicateVideo(item)) {
+    alert("Такой ролик уже есть. Повторно не добавляю.");
+    return;
+  }
 
   await addDoc(collection(db, "videos"), item);
+
   resetForm();
   await loadVideos();
+
   alert("Ролик сохранён в Firebase");
 }
 
 function resetForm() {
-  videoInput.value = ""; imageInput.value = ""; titleInput.value = ""; durationInput.value = "";
-  document.getElementById("views").value = ""; document.getElementById("tags").value = "";
+  sourceUrlInput.value = "";
+  videoInput.value = "";
+  imageInput.value = "";
+  titleInput.value = "";
+  modelsInput.value = "";
+  durationInput.value = "";
+  document.getElementById("views").value = "";
+  tagsInput.value = "";
   document.getElementById("premium").checked = false;
-  previewVideo.removeAttribute("src"); previewImage.removeAttribute("src");
+  previewVideo.removeAttribute("src");
+  previewImage.removeAttribute("src");
   document.getElementById("duplicateWarning").innerHTML = "";
+  document.getElementById("autoStatus").innerHTML = "";
+  document.getElementById("autoStatus").classList.remove("show");
 }
 
 window.deleteFirebaseVideo = async function (id) {
   if (!confirm("Удалить этот ролик из Firebase?")) return;
+
   await deleteDoc(doc(db, "videos", id));
   await loadVideos();
 };
@@ -180,13 +624,23 @@ window.deleteFirebaseVideo = async function (id) {
 async function loadVideos() {
   const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
+
   allFirebaseVideos.length = 0;
-  snap.docs.forEach(docSnap => allFirebaseVideos.push({ id: docSnap.id, ...docSnap.data() }));
+
+  snap.docs.forEach(docSnap => {
+    allFirebaseVideos.push({
+      id: docSnap.id,
+      ...docSnap.data()
+    });
+  });
+
   renderAdmin();
 }
 
 function renderAdmin() {
-  document.getElementById("adminStats").innerHTML = `Всего в Firebase: <b>${allFirebaseVideos.length}</b>`;
+  document.getElementById("adminStats").innerHTML =
+    `Всего в Firebase: <b>${allFirebaseVideos.length}</b>`;
+
   document.getElementById("adminGrid").innerHTML = allFirebaseVideos.slice(0, 20).map(v => `
     <div class="card admin-video-card">
       <a href="video.html?id=${v.id}" class="admin-card-link">
@@ -195,10 +649,22 @@ function renderAdmin() {
           ${v.premium ? '<span class="badge">Premium</span>' : ''}
           <span class="duration">${v.duration || "0:00"}</span>
         </div>
+
         <h3>${v.title || "Без названия"}</h3>
-        <div class="meta"><span>👁 ${v.views || "0"}</span><span>🏷 ${v.category || "новое"}</span></div>
+
+        <div class="meta">
+          <span>👁 ${v.views || "0"}</span>
+          <span>🏷 ${v.category || "новое"}</span>
+        </div>
       </a>
-      <button type="button" onclick="deleteFirebaseVideo('${v.id}')" class="delete-btn">Удалить</button>
+
+      <button
+        type="button"
+        onclick="deleteFirebaseVideo('${v.id}')"
+        class="delete-btn"
+      >
+        Удалить
+      </button>
     </div>
   `).join("");
 }
