@@ -1,230 +1,97 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reels | SEX-campos</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Reels | SEX-campos</title><link rel="stylesheet" href="style.css"/></head>
 <body class="reels-body">
-
-<header class="reels-top">
-  <a href="index.html">←</a>
-  <b>SEX-campos Reels</b>
-</header>
-
-<div class="next-recommend-overlay" id="nextOverlay">
-  <div class="next-box">
-    <div class="next-title">Следующее видео через <span id="nextCountdown">5</span></div>
-    <div class="next-grid" id="nextGrid"></div>
-    <button class="next-cancel" onclick="cancelAutoNext()">Остаться здесь</button>
-  </div>
-</div>
-
+<header class="reels-top"><a href="index.html">←</a><b>SEX-campos Reels</b></header>
+<div class="next-recommend-overlay" id="nextOverlay"><div class="next-box"><div class="next-title">Следующее видео через <span id="nextCountdown">5</span></div><div class="next-grid" id="nextGrid"></div><button class="next-cancel" onclick="cancelAutoNext()">Остаться здесь</button></div></div>
 <main class="reels-container" id="reelsContainer"></main>
 
-<script src="data.js"></script>
-<script>
-const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
-const baseVideos = typeof videos !== "undefined" ? videos : [];
-const allVideos = [...savedVideos, ...baseVideos];
+<script type="module">
+import { db, collection, getDocs, query, orderBy } from "./firebase.js";
 
 const container = document.getElementById("reelsContainer");
-
+let allVideos = [];
 let nextTimer = null;
 let nextCountdownTimer = null;
 
-function onlineNow(id) {
-  return 20 + (Number(id) * 17) % 480;
-}
-
-function getList(name) {
-  return JSON.parse(localStorage.getItem(name) || "[]");
-}
-
-function saveList(name, list) {
-  localStorage.setItem(name, JSON.stringify(list));
-}
-
-function normalize(value) {
-  return String(value || "").toLowerCase().trim();
-}
-
-function viewsToNumber(value) {
-  const text = String(value || "0").toUpperCase().replace(",", ".");
-  const number = parseFloat(text) || 0;
-
-  if (text.includes("M")) return number * 1000000;
-  if (text.includes("K")) return number * 1000;
-
-  return number;
-}
-
+function onlineNow(id) { return 20 + (String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 17) % 480; }
 function tagMatches(a = [], b = []) {
-  const first = a.map(normalize);
-  const second = b.map(normalize);
-  return first.filter(tag => second.includes(tag)).length;
+  const first = a.map(t => String(t).toLowerCase());
+  const second = b.map(t => String(t).toLowerCase());
+  return first.filter(t => second.includes(t)).length;
 }
-
 function scoreVideo(base, item) {
   let score = 0;
-
-  if (base && item) {
-    if (normalize(base.category) === normalize(item.category)) score += 60;
-    score += tagMatches(base.tags || [], item.tags || []) * 25;
-  }
-
-  score += Math.min(viewsToNumber(item.views) / 10000, 25);
-
+  if (base && item) { if (base.category === item.category) score += 60; score += tagMatches(base.tags || [], item.tags || []) * 25; }
   if (item.premium) score += 8;
-
   score += Math.random() * 15;
-
   return score;
 }
+function getForYouFeed() { return allVideos.filter(v => v && v.video).map(v => ({ ...v, score: scoreVideo(null, v) })).sort((a, b) => b.score - a.score).slice(0, 80); }
+function getNextRecommendations(currentVideo) { return allVideos.filter(v => v && v.video).filter(v => String(v.id) !== String(currentVideo?.id)).map(v => ({ ...v, score: scoreVideo(currentVideo, v) })).sort((a, b) => b.score - a.score).slice(0, 3); }
 
-function getForYouFeed() {
-  return allVideos
-    .filter(v => v && v.video)
-    .map(v => ({ ...v, score: scoreVideo(null, v) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 80);
-}
+function getList(name) { return JSON.parse(localStorage.getItem(name) || "[]"); }
+function saveList(name, list) { localStorage.setItem(name, JSON.stringify(list)); }
 
-function getNextRecommendations(currentVideo) {
-  return allVideos
-    .filter(v => v && v.video)
-    .filter(v => Number(v.id) !== Number(currentVideo?.id))
-    .map(v => ({ ...v, score: scoreVideo(currentVideo, v) }))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-}
-
-function toggleFavorite(id, btn) {
+window.toggleFavorite = function (id, btn) {
   let favs = getList("favorite_videos");
   const exists = favs.includes(id);
-
-  if (exists) {
-    favs = favs.filter(v => v !== id);
-    btn.innerText = "☆";
-  } else {
-    favs.push(id);
-    btn.innerText = "★";
-  }
-
+  if (exists) { favs = favs.filter(v => v !== id); btn.innerText = "☆"; }
+  else { favs.push(id); btn.innerText = "★"; }
   saveList("favorite_videos", favs);
-}
-
-function toggleLike(id, btn) {
+};
+window.toggleLike = function (id, btn) {
   let likes = getList("liked_videos");
   const exists = likes.includes(id);
-
-  if (exists) {
-    likes = likes.filter(v => v !== id);
-    btn.innerText = "♡";
-  } else {
-    likes.push(id);
-    btn.innerText = "♥";
-  }
-
+  if (exists) { likes = likes.filter(v => v !== id); btn.innerText = "♡"; }
+  else { likes.push(id); btn.innerText = "♥"; }
   saveList("liked_videos", likes);
-}
-
+};
 function addToHistory(video) {
-  const history = getList("watch_history").filter(item => Number(item.id) !== Number(video.id));
-
-  history.unshift({
-    id: video.id,
-    title: video.title,
-    image: video.image,
-    category: video.category,
-    date: new Date().toISOString()
-  });
-
+  const history = getList("watch_history").filter(item => String(item.id) !== String(video.id));
+  history.unshift({ id: video.id, title: video.title, image: video.image, category: video.category, date: new Date().toISOString() });
   saveList("watch_history", history.slice(0, 50));
 }
 
 function renderReels() {
   const list = getForYouFeed();
-
   if (!list.length) {
-    container.innerHTML = `
-      <section class="reel-slide empty-reel">
-        <h2>Пока нет видео</h2>
-        <p>Добавь ролики через admin.html</p>
-      </section>
-    `;
+    container.innerHTML = `<section class="reel-slide empty-reel"><h2>Пока нет видео</h2><p>Добавь ролики через admin.html</p></section>`;
     return;
   }
-
   container.innerHTML = list.map(video => `
     <section class="reel-slide" data-id="${video.id}">
-      <video
-        class="reel-video"
-        src="${video.video}"
-        poster="${video.image || ''}"
-        playsinline
-        preload="metadata"
-      ></video>
-
+      <video class="reel-video" src="${video.video}" poster="${video.image || ""}" playsinline preload="metadata"></video>
       <div class="reel-gradient"></div>
-
-      <div class="reel-info">
-        <h2>${video.title}</h2>
-        <p>👁 ${video.views || "0"} • 🟢 ${onlineNow(video.id)} смотрят • ${video.category || "новое"}</p>
-
-        <div class="reel-tags">
-          ${(video.tags || []).slice(0, 4).map(tag => `<span>+ ${tag}</span>`).join("")}
-        </div>
-      </div>
-
-      <div class="reel-actions">
-        <button onclick="toggleLike(${video.id}, this)">♡</button>
-        <button onclick="toggleFavorite(${video.id}, this)">☆</button>
-        <a href="video.html?id=${video.id}">↗</a>
-      </div>
-    </section>
-  `).join("");
-
-  setupAutoplay(list);
+      <div class="reel-info"><h2>${video.title || "Без названия"}</h2><p>👁 ${video.views || "0"} • 🟢 ${onlineNow(video.id)} смотрят • ${video.category || "новое"}</p><div class="reel-tags">${(video.tags || []).slice(0, 4).map(tag => `<span>+ ${tag}</span>`).join("")}</div></div>
+      <div class="reel-actions"><button onclick="toggleLike('${video.id}', this)">♡</button><button onclick="toggleFavorite('${video.id}', this)">☆</button><a href="video.html?id=${video.id}">↗</a></div>
+    </section>`).join("");
+  setupAutoplay();
 }
 
-function setupAutoplay(list) {
+function setupAutoplay() {
   const slides = document.querySelectorAll(".reel-slide");
   const videosEls = document.querySelectorAll(".reel-video");
-
   videosEls.forEach((videoEl, index) => {
     videoEl.addEventListener("ended", () => {
       const nextSlide = slides[index + 1] || slides[0];
-      const currentId = Number(slides[index].dataset.id);
-      const currentVideo = allVideos.find(v => Number(v.id) === currentId);
-
+      const currentId = slides[index].dataset.id;
+      const currentVideo = allVideos.find(v => String(v.id) === String(currentId));
       showNextRecommendations(currentVideo, nextSlide);
     });
   });
-
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       const video = entry.target.querySelector("video");
-      const id = Number(entry.target.dataset.id);
-      const item = allVideos.find(v => Number(v.id) === id);
-
+      const id = entry.target.dataset.id;
+      const item = allVideos.find(v => String(v.id) === String(id));
       if (entry.isIntersecting) {
-        videosEls.forEach(v => {
-          if (v !== video) {
-            v.pause();
-            v.currentTime = 0;
-          }
-        });
-
+        videosEls.forEach(v => { if (v !== video) { v.pause(); v.currentTime = 0; } });
         video.play().catch(() => {});
         if (item) addToHistory(item);
-      } else {
-        video.pause();
-      }
+      } else { video.pause(); }
     });
   }, { threshold: 0.65 });
-
   slides.forEach(slide => observer.observe(slide));
 }
 
@@ -232,50 +99,33 @@ function showNextRecommendations(currentVideo, nextSlide) {
   const overlay = document.getElementById("nextOverlay");
   const countdown = document.getElementById("nextCountdown");
   const grid = document.getElementById("nextGrid");
-
-  if (!overlay || !countdown || !grid) return;
-
   clearTimeout(nextTimer);
   clearInterval(nextCountdownTimer);
-
   const recs = getNextRecommendations(currentVideo);
-
-  grid.innerHTML = recs.map(v => `
-    <a href="video.html?id=${v.id}" class="next-card">
-      <img src="${v.image || ''}" alt="">
-      <span>${v.title}</span>
-    </a>
-  `).join("");
-
+  grid.innerHTML = recs.map(v => `<a href="video.html?id=${v.id}" class="next-card"><img src="${v.image || ""}" alt=""><span>${v.title}</span></a>`).join("");
   let seconds = 5;
   countdown.innerText = seconds;
-
   overlay.classList.add("show");
-
-  nextCountdownTimer = setInterval(() => {
-    seconds--;
-    countdown.innerText = seconds;
-
-    if (seconds <= 0) {
-      clearInterval(nextCountdownTimer);
-    }
-  }, 1000);
-
-  nextTimer = setTimeout(() => {
-    overlay.classList.remove("show");
-    nextSlide?.scrollIntoView({ behavior: "smooth" });
-  }, 5000);
+  nextCountdownTimer = setInterval(() => { seconds--; countdown.innerText = seconds; if (seconds <= 0) clearInterval(nextCountdownTimer); }, 1000);
+  nextTimer = setTimeout(() => { overlay.classList.remove("show"); nextSlide?.scrollIntoView({ behavior: "smooth" }); }, 5000);
 }
-
-function cancelAutoNext() {
+window.cancelAutoNext = function () {
   clearTimeout(nextTimer);
   clearInterval(nextCountdownTimer);
+  document.getElementById("nextOverlay")?.classList.remove("show");
+};
 
-  const overlay = document.getElementById("nextOverlay");
-  overlay?.classList.remove("show");
+async function loadVideos() {
+  try {
+    const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    allVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderReels();
+  } catch (error) {
+    container.innerHTML = `<section class="reel-slide empty-reel"><h2>Ошибка Firebase</h2><p>${error.message}</p></section>`;
+  }
 }
-
-renderReels();
+loadVideos();
 </script>
 </body>
 </html>

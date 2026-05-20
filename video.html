@@ -1,208 +1,95 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Видео</title>
-  <link rel="stylesheet" href="style.css"/>
-</head>
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Видео | SEX-campos</title><link rel="stylesheet" href="style.css"/></head>
 <body>
+<header class="topbar video-topbar"><a class="back" href="index.html">← Назад</a><div class="logo">SEX-campos</div></header>
+<main class="video-page"><div id="videoContent">Загрузка...</div></main>
+<div class="bottom-menu"><a href="index.html">Главная</a><a href="reels.html">Reels</a><a href="index.html">Категории</a><a href="admin.html">Admin</a></div>
 
-<header class="topbar video-topbar">
-  <a class="back" href="index.html">← Назад</a>
-  <div class="logo">SEX-campos</div>
-</header>
-
-<main class="video-page">
-  <div class="player-box">
-    <video controls playsinline width="100%" poster="" id="videoPlayer">
-      <source id="videoSource" src="" type="video/mp4">
-    </video>
-  </div>
-
-  <div class="video-info">
-    <h1 id="videoTitle"></h1>
-
-    <div class="video-stats" id="videoMeta"></div>
-
-    <div class="action-row">
-      <button class="action-btn" id="likeBtn" onclick="toggleLike()">♡ Нравится</button>
-      <button class="action-btn" id="favBtn" onclick="toggleFavorite()">☆ В избранное</button>
-      <button class="action-btn premium-action">⚡ Premium</button>
-    </div>
-
-    <div class="tags" id="videoTags"></div>
-  </div>
-
-  <div class="ad-box">
-    <b>🔥 Девушки рядом</b><br>
-    тут может быть ваша реклама
-    <a class="ad-btn" href="https://t.me/sex_campos" target="_blank">Разместить рекламу</a>
-  </div>
-
-  <div class="section-head">
-    <h2>Похожие видео</h2>
-    <span class="count">подборка</span>
-  </div>
-
-  <div class="grid" id="relatedGrid"></div>
-</main>
-
-<div class="bottom-menu">
-  <a href="index.html">Главная</a>
-  <a href="index.html">Новые</a>
-  <a href="index.html">Категории</a>
-  <a href="admin.html">Admin</a>
-</div>
-
-<script src="data.js"></script>
-<script>
-const savedVideos = JSON.parse(localStorage.getItem("my_videos") || "[]");
-const allVideos = [...savedVideos, ...videos];
+<script type="module">
+import { db, collection, getDocs, getDoc, doc, query, orderBy } from "./firebase.js";
 
 const params = new URLSearchParams(window.location.search);
-const id = Number(params.get("id"));
-const video = allVideos.find(v => Number(v.id) === id) || allVideos[0];
+const id = params.get("id");
+const content = document.getElementById("videoContent");
 
-document.title = video.title + " | CampusHeat";
+function onlineNow(id) { return 20 + (String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 17) % 480; }
+function getList(name) { return JSON.parse(localStorage.getItem(name) || "[]"); }
+function saveList(name, list) { localStorage.setItem(name, JSON.stringify(list)); }
 
-document.getElementById("videoPlayer").poster = video.image;
-document.getElementById("videoSource").src = video.video || "https://www.w3schools.com/html/mov_bbb.mp4";
-document.getElementById("videoPlayer").load();
-
-document.getElementById("videoTitle").innerText = video.title;
-
-document.getElementById("videoMeta").innerHTML = `
-  <span>👁 ${video.views}</span>
-  <span>🟢 ${20 + (Number(video.id) * 17) % 480} смотрят сейчас</span>
-  <span>◴ ${video.duration}</span>
-  <span>🏷 ${video.category}</span>
-`;
-
-document.getElementById("videoTags").innerHTML = (video.tags || []).map(tag =>
-  `<span class="tag">+ ${tag}</span>`
-).join("");
-
-function viewsToNumber(value) {
-  if (!value) return 0;
-
-  const text = String(value).toUpperCase().replace(",", ".");
-  const number = parseFloat(text);
-
-  if (text.includes("M")) return number * 1000000;
-  if (text.includes("K")) return number * 1000;
-
-  return number || 0;
-}
-
-function countMatchingTags(a = [], b = []) {
-  const first = a.map(tag => String(tag).toLowerCase());
-  const second = b.map(tag => String(tag).toLowerCase());
-
-  return first.filter(tag => second.includes(tag)).length;
-}
-
-function getSmartRelated(currentVideo, all) {
-  return all
-    .filter(v => Number(v.id) !== Number(currentVideo.id))
-    .map(v => {
-      let score = 0;
-
-      if (v.category === currentVideo.category) score += 60;
-
-      const tagMatches = countMatchingTags(v.tags || [], currentVideo.tags || []);
-      score += tagMatches * 25;
-
-      if (v.premium === currentVideo.premium) score += 8;
-      if (v.premium) score += 4;
-
-      score += Math.min(viewsToNumber(v.views) / 10000, 20);
-
-      // маленький рандом, чтобы похожие видео не были всегда одинаковыми
-      score += Math.random() * 12;
-
-      return { ...v, score };
-    })
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 12);
-}
-
-const related = getSmartRelated(video, allVideos);
-
-document.getElementById("relatedGrid").innerHTML = related.map(v => `
-  <a href="video.html?id=${v.id}" class="card">
-    <div class="thumb-wrap">
-      <img class="thumb" src="${v.image}" loading="lazy" />
-      ${v.premium ? '<span class="badge">Premium</span>' : ''}
-      ${Number(v.id) % 5 === 0 ? '<span class="trend-badge">🔥 Trending</span>' : ''}
-      <span class="duration">${v.duration}</span>
-    </div>
-    <h3>${v.title}</h3>
-    <div class="meta">
-      <span>👁 ${v.views}</span>
-      <span>🟢 ${20 + (Number(v.id) * 17) % 480} смотрят</span>
-    </div>
-  </a>
-`).join("");
-
-function getList(name) {
-  return JSON.parse(localStorage.getItem(name) || "[]");
-}
-
-function saveList(name, list) {
-  localStorage.setItem(name, JSON.stringify(list));
-}
-
-function addToHistory() {
-  const history = getList("watch_history").filter(item => Number(item.id) !== Number(video.id));
-  history.unshift({
-    id: video.id,
-    title: video.title,
-    image: video.image,
-    category: video.category,
-    date: new Date().toISOString()
-  });
+function addToHistory(video) {
+  const history = getList("watch_history").filter(item => String(item.id) !== String(video.id));
+  history.unshift({ id: video.id, title: video.title, image: video.image, category: video.category, date: new Date().toISOString() });
   saveList("watch_history", history.slice(0, 50));
 }
 
-function toggleLike() {
-  const likes = getList("liked_videos");
-  const exists = likes.includes(video.id);
+function tagMatches(a = [], b = []) {
+  const first = a.map(t => String(t).toLowerCase());
+  const second = b.map(t => String(t).toLowerCase());
+  return first.filter(t => second.includes(t)).length;
+}
 
-  if (exists) {
-    saveList("liked_videos", likes.filter(id => id !== video.id));
-  } else {
-    likes.push(video.id);
-    saveList("liked_videos", likes);
+function getRelated(current, all) {
+  return all.filter(v => String(v.id) !== String(current.id)).map(v => {
+    let score = 0;
+    if (v.category === current.category) score += 60;
+    score += tagMatches(v.tags || [], current.tags || []) * 25;
+    score += Math.random() * 10;
+    return { ...v, score };
+  }).sort((a, b) => b.score - a.score).slice(0, 12);
+}
+
+window.toggleLike = function (id, btn) {
+  let likes = getList("liked_videos");
+  const exists = likes.includes(id);
+  if (exists) { likes = likes.filter(v => v !== id); btn.innerText = "♡ Нравится"; }
+  else { likes.push(id); btn.innerText = "♥ Нравится"; }
+  saveList("liked_videos", likes);
+};
+
+window.toggleFavorite = function (id, btn) {
+  let favs = getList("favorite_videos");
+  const exists = favs.includes(id);
+  if (exists) { favs = favs.filter(v => v !== id); btn.innerText = "☆ В избранное"; }
+  else { favs.push(id); btn.innerText = "★ В избранном"; }
+  saveList("favorite_videos", favs);
+};
+
+async function loadPage() {
+  try {
+    const videoDoc = await getDoc(doc(db, "videos", id));
+    if (!videoDoc.exists()) { content.innerHTML = "<h2>Видео не найдено</h2>"; return; }
+    const video = { id: videoDoc.id, ...videoDoc.data() };
+    document.title = video.title + " | SEX-campos";
+    addToHistory(video);
+
+    const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
+    const allVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const related = getRelated(video, allVideos);
+
+    content.innerHTML = `
+      <div class="player-box"><video controls playsinline width="100%" poster="${video.image || ""}" id="videoPlayer"><source src="${video.video}" type="video/mp4"></video></div>
+      <div class="video-info">
+        <h1>${video.title || "Без названия"}</h1>
+        <div class="video-stats"><span>👁 ${video.views || "0"}</span><span>🟢 ${onlineNow(video.id)} смотрят сейчас</span><span>◴ ${video.duration || "0:00"}</span><span>🏷 ${video.category || "новое"}</span></div>
+        <div class="action-row"><button class="action-btn" onclick="toggleLike('${video.id}', this)">♡ Нравится</button><button class="action-btn" onclick="toggleFavorite('${video.id}', this)">☆ В избранное</button><button class="action-btn premium-action">⚡ Premium</button></div>
+        <div class="tags">${(video.tags || []).map(tag => `<span class="tag">+ ${tag}</span>`).join("")}</div>
+      </div>
+      <div class="ad-box"><b>🔥 Девушки рядом</b><br>тут может быть ваша реклама<a class="ad-btn" href="https://t.me/sex_campos" target="_blank">Разместить рекламу</a></div>
+      <div class="section-head"><h2>Похожие видео</h2><span class="count">подборка</span></div>
+      <div class="grid">${related.map(v => `
+        <a href="video.html?id=${v.id}" class="card">
+          <div class="thumb-wrap"><img class="thumb" src="${v.image || ""}" loading="lazy" />${v.premium ? '<span class="badge">Premium</span>' : ''}<span class="duration">${v.duration || "0:00"}</span></div>
+          <h3>${v.title || "Без названия"}</h3>
+          <div class="meta"><span>👁 ${v.views || "0"}</span><span>🟢 ${onlineNow(v.id)} смотрят</span></div>
+        </a>`).join("")}</div>
+    `;
+  } catch (error) {
+    content.innerHTML = `<h2>Ошибка Firebase</h2><p>${error.message}</p>`;
   }
-
-  updateButtons();
 }
-
-function toggleFavorite() {
-  const favs = getList("favorite_videos");
-  const exists = favs.includes(video.id);
-
-  if (exists) {
-    saveList("favorite_videos", favs.filter(id => id !== video.id));
-  } else {
-    favs.push(video.id);
-    saveList("favorite_videos", favs);
-  }
-
-  updateButtons();
-}
-
-function updateButtons() {
-  const likes = getList("liked_videos");
-  const favs = getList("favorite_videos");
-
-  document.getElementById("likeBtn").innerText = likes.includes(video.id) ? "♥ Нравится" : "♡ Нравится";
-  document.getElementById("favBtn").innerText = favs.includes(video.id) ? "★ В избранном" : "☆ В избранное";
-}
-
-addToHistory();
-updateButtons();
+loadPage();
 </script>
 </body>
 </html>

@@ -4,7 +4,13 @@ import {
   getFirestore,
   collection,
   addDoc,
-  getDocs
+  getDocs,
+  getDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -20,7 +26,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.firebaseDB = db;
-window.firebaseCollection = collection;
-window.firebaseAddDoc = addDoc;
-window.firebaseGetDocs = getDocs;
+export {
+  db,
+  collection,
+  addDoc,
+  getDocs,
+  getDoc,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  serverTimestamp
+};

@@ -1,20 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<!-- SEX-campos SEO -->
-<meta name="description" content="SEX-campos — новые ролики каждый день. Reels, категории, популярное и mobile tube просмотр.">
-
-<meta property="og:title" content="SEX-campos">
-<meta property="og:description" content="Новые ролики каждый день">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://YOUR_USERNAME.github.io/SEX-campos/preview.jpg">
-
-<meta name="twitter:card" content="summary_large_image">
-
-<link rel="icon" href="favicon.png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SEX-campus</title>
+  <title>SEX-campos</title>
+  <meta name="description" content="SEX-campos — новые ролики каждый день.">
   <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
@@ -29,13 +19,8 @@
 
 <header class="topbar">
   <div class="logo-row">
-    <div class="logo">SEX-campus</div>
-    <div class="top-icons">
-      <span>💬</span>
-      <span>👤</span>
-      <span>⚡</span>
-      <span>🔎</span>
-    </div>
+    <div class="logo">SEX-campos</div>
+    <div class="top-icons"><span>💬</span><span>👤</span><span>⚡</span><span>🔎</span></div>
   </div>
 
   <button class="menu-btn" onclick="openMenu()">☰ Открыть меню</button>
@@ -48,34 +33,36 @@
   </div>
 
   <input id="searchInput" class="search" type="text" placeholder="Поиск видео..." />
-
   <div class="category-scroll" id="categoryList"></div>
 </header>
 
+<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+<aside class="side-menu" id="sideMenu">
+  <div class="side-head"><div><b>SEX-campos</b><span>меню сайта</span></div><button onclick="closeMenu()">×</button></div>
+  <a href="index.html">🏠 Главная</a>
+  <a href="reels.html">📱 Reels</a>
+  <a href="admin.html">⚙️ Admin</a>
+  <a href="https://t.me/sex_campos" target="_blank">📢 Разместить рекламу</a>
+  <a href="dmca.html">📄 DMCA</a>
+</aside>
 
-<div class="top-ad">
-  <a href="https://t.me/sex_campos" target="_blank">
-    🔥 Тут может быть ваша реклама
-  </a>
-</div>
+<div class="top-ad"><a href="https://t.me/sex_campos" target="_blank">🔥 Тут может быть ваша реклама</a></div>
 
 <main>
-
-<section class="daily-info">
-  <div class="daily-icon">🔥</div>
-  <div>
-    <h2>Новые ролики каждый день</h2>
-    <p>Мы добавляем свежие видео постепенно — заходи каждый день, чтобы не пропустить новые публикации.</p>
-  </div>
-</section>
+  <section class="daily-info">
+    <div class="daily-icon">🔥</div>
+    <div>
+      <h2>Новые ролики каждый день</h2>
+      <p>Мы добавляем свежие видео постепенно — заходи каждый день, чтобы не пропустить новые публикации.</p>
+    </div>
+  </section>
 
   <div class="section-head">
     <h2 id="pageTitle">Релевантные видео</h2>
-    <span id="videoCount" class="count"></span>
+    <span id="videoCount" class="count">загрузка...</span>
   </div>
 
   <div class="grid" id="videoGrid"></div>
-
   <button id="loadMoreBtn" class="load-more">Показать ещё</button>
 </main>
 
@@ -88,41 +75,6 @@
   <a href="admin.html">Admin</a>
 </div>
 
-
-<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-
-<aside class="side-menu" id="sideMenu">
-  <div class="side-head">
-    <div>
-      <b>SEX-campus</b>
-      <span>меню сайта</span>
-    </div>
-    <button onclick="closeMenu()">×</button>
-  </div>
-
-  <a href="index.html">🏠 Главная</a>
-  <a href="category.html?name=русское">+ русское</a>
-  <a href="category.html?name=крупным планом">+ крупным планом</a>
-  <a href="category.html?name=чулки">+ чулки</a>
-  <a href="category.html?name=мжм">+ мжм</a>
-  <a href="category.html?name=бдсм">+ бдсм</a>
-  <a href="category.html?name=в тренде">🔥 в тренде</a>
-
-  <div class="side-sep"></div>
-
-  <a href="https://t.me/sex_campos" target="_blank">📢 Разместить рекламу</a>
-  <a href="https://t.me/sex_campos" target="_blank">💬 Telegram</a>
-  <a href="reels.html">📱 Reels</a>
-  <a href="history.html">🕘 История просмотров</a>
-  <a href="admin.html">⚙️ Admin</a>
-  <a href="dmca.html">📄 DMCA</a>
-  <a href="18.html">🔞 18+</a>
-  <a href="terms.html">📜 Правила сайта</a>
-  <a href="privacy.html">🔐 Privacy Policy</a>
-</aside>
-
-
-<script src="data.js"></script>
-<script src="script.js"></script>
+<script type="module" src="script.js"></script>
 </body>
 </html>

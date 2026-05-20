@@ -5,50 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Admin | SEX-campos</title>
   <link rel="stylesheet" href="style.css"/>
-
-<style>
-.admin-card-link {
-  display: block;
-  color: inherit;
-  text-decoration: none;
-}
-
-.delete-btn {
-  width: 100%;
-  margin-top: 8px;
-  background: #321018;
-  border: 1px solid #5a1c2b;
-  color: #fff;
-  padding: 10px;
-  border-radius: 10px;
-  font-weight: 700;
-}
-</style>
-
+  <style>
+    .admin-card-link{display:block;color:inherit;text-decoration:none}
+    .delete-btn{width:100%;margin-top:8px;background:#321018;border:1px solid #5a1c2b;color:#fff;padding:10px;border-radius:10px;font-weight:700}
+  </style>
 </head>
 <body>
 
 <script>
 const password = "12345";
 const userPass = prompt("Введите пароль");
-
 if (userPass !== password) {
-  document.body.innerHTML = `
-    <div style="
-      background:#000;
-      color:#fff;
-      height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:Arial;
-      font-size:24px;
-      text-align:center;
-      padding:20px;
-    ">
-      Доступ запрещён
-    </div>
-  `;
+  document.body.innerHTML = `<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>`;
 }
 </script>
 
@@ -58,21 +26,14 @@ if (userPass !== password) {
 </header>
 
 <main class="admin-page">
-
   <div class="admin-card">
-    <h2>Добавить ролик</h2>
-    <p class="admin-note">Ежедневная загрузка 2–4 роликов. Заполни поля и нажми “Добавить”.</p>
+    <h2>Добавить ролик в Firebase</h2>
+    <p class="admin-note">Для постоянного хранения вставляй MP4-ссылку и ссылку на превью. Файлы с телефона напрямую пока не грузим в Firebase Storage.</p>
 
-    <label>MP4 файл с телефона</label>
-    <input id="videoFile" class="input" type="file" accept="video/mp4,video/*">
-
-    <label>Или ссылка на MP4</label>
+    <label>Ссылка на MP4</label>
     <input id="video" class="input" placeholder="https://site.com/video.mp4">
 
-    <label>Превью / картинка</label>
-    <input id="imageFile" class="input" type="file" accept="image/*">
-
-    <label>Или ссылка на превью</label>
+    <label>Ссылка на превью</label>
     <input id="image" class="input" placeholder="https://site.com/preview.jpg">
 
     <div class="admin-preview">
@@ -82,377 +43,167 @@ if (userPass !== password) {
 
     <label>Название</label>
     <input id="title" class="input" placeholder="Название видео">
-
     <div id="duplicateWarning" class="duplicate-warning"></div>
 
     <label>Категория</label>
     <select id="category" class="input"></select>
-
     <div class="quick-row" id="quickCategories"></div>
 
     <label>Теги через запятую</label>
     <input id="tags" class="input" placeholder="русское, pov, с разговорами">
-
     <div class="quick-row" id="quickTags"></div>
 
     <div class="two-col">
-      <div>
-        <label>Длительность</label>
-        <input id="duration" class="input" placeholder="12:45">
-      </div>
-
-      <div>
-        <label>Просмотры</label>
-        <input id="views" class="input" placeholder="0">
-      </div>
+      <div><label>Длительность</label><input id="duration" class="input" placeholder="12:45"></div>
+      <div><label>Просмотры</label><input id="views" class="input" placeholder="0"></div>
     </div>
 
-    <label class="check">
-      <input id="premium" type="checkbox"> Premium
-    </label>
-
-    <button id="singleAddBtn" class="load-more" onclick="addVideo()">Добавить ролик</button>
-    <button class="dark-btn" onclick="exportData()">Скачать новый data.js</button>
-    <button class="dark-btn danger-btn" onclick="clearMyVideos()">Очистить добавленные</button>
+    <label class="check"><input id="premium" type="checkbox"> Premium</label>
+    <button id="singleAddBtn" class="load-more">Добавить в Firebase</button>
   </div>
 
   <div class="admin-card">
-    <h2>Последние добавленные</h2>
-    <div class="admin-stats" id="adminStats"></div>
+    <h2>Видео в Firebase</h2>
+    <div class="admin-stats" id="adminStats">загрузка...</div>
     <div class="grid compact-grid" id="adminGrid"></div>
   </div>
-
 </main>
 
-<script src="data.js"></script>
-<script>
-const categoriesRu = [
-  "русское",
-  "грязные разговоры",
-  "с разговорами",
-  "pov",
-  "измена",
-  "красивое",
-  "соблазнение девушки",
-  "непостановочное",
-  "спящие",
-  "крупным планом",
-  "чулки",
-  "мжм",
-  "жмж",
-  "бдсм",
-  "сексвайф",
-  "в поезде",
-  "в тренде",
-  "новые"
-];
+<script type="module">
+import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "./firebase.js";
 
-const quickTags = [
-  "русское",
-  "грязные разговоры",
-  "с разговорами",
-  "спящие",
-  "измена",
-  "pov",
-  "непостановочное",
-  "красивое",
-  "соблазнение девушки"
-];
+const categoriesRu = ["русское","грязные разговоры","с разговорами","pov","измена","красивое","соблазнение девушки","непостановочное","спящие","крупным планом","чулки","мжм","жмж","бдсм","сексвайф","в поезде","в тренде","новые"];
+const quickTags = ["русское","грязные разговоры","с разговорами","спящие","измена","pov","непостановочное","красивое","соблазнение девушки"];
+const allFirebaseVideos = [];
 
-document.getElementById("category").innerHTML = categoriesRu.map(c =>
-  `<option value="${c}">${c}</option>`
-).join("");
-
-document.getElementById("quickCategories").innerHTML = categoriesRu.slice(0, 9).map(c =>
-  `<button type="button" onclick="setCategory('${c}')">${c}</button>`
-).join("");
-
-document.getElementById("quickTags").innerHTML = quickTags.map(tag =>
-  `<button type="button" onclick="addTag('${tag}')">+ ${tag}</button>`
-).join("");
-
-const videoFile = document.getElementById("videoFile");
-const imageFile = document.getElementById("imageFile");
 const videoInput = document.getElementById("video");
 const imageInput = document.getElementById("image");
 const previewVideo = document.getElementById("previewVideo");
 const previewImage = document.getElementById("previewImage");
-const durationInput = document.getElementById("duration");
 const titleInput = document.getElementById("title");
+const durationInput = document.getElementById("duration");
 
-function getMyVideos() {
-  return JSON.parse(localStorage.getItem("my_videos") || "[]");
-}
+document.getElementById("category").innerHTML = categoriesRu.map(c => `<option value="${c}">${c}</option>`).join("");
+document.getElementById("quickCategories").innerHTML = categoriesRu.slice(0, 9).map(c => `<button type="button" onclick="setCategory('${c}')">${c}</button>`).join("");
+document.getElementById("quickTags").innerHTML = quickTags.map(tag => `<button type="button" onclick="addTag('${tag}')">+ ${tag}</button>`).join("");
 
-function saveMyVideos(list) {
-  localStorage.setItem("my_videos", JSON.stringify(list));
-}
+window.setCategory = function (category) { document.getElementById("category").value = category; };
+window.addTag = function (tag) {
+  const input = document.getElementById("tags");
+  const current = input.value.split(",").map(t => t.trim()).filter(Boolean);
+  if (!current.includes(tag)) current.push(tag);
+  input.value = current.join(", ");
+};
 
-function normalizeText(value) {
-  return String(value || "")
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, " ");
-}
+function normalizeText(value) { return String(value || "").toLowerCase().trim().replace(/\s+/g, " "); }
 
-function cleanTitle(fileName) {
-  return decodeURIComponent(fileName || "")
-    .replace(/\.[^/.]+$/, "")
-    .replaceAll("_", " ")
-    .replaceAll("-", " ")
-    .replaceAll(".", " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function isDuplicateVideo(newItem, list) {
-  const all = [...list, ...(typeof videos !== "undefined" ? videos : [])];
-
-  return all.some(item => {
-    const sameTitle =
-      normalizeText(item.title) &&
-      normalizeText(item.title) === normalizeText(newItem.title);
-
-    const sameVideo =
-      item.video &&
-      newItem.video &&
-      String(item.video) === String(newItem.video);
-
-    const sameFileName =
-      item.fileName &&
-      newItem.fileName &&
-      normalizeText(item.fileName) === normalizeText(newItem.fileName);
-
-    const sameFileSize =
-      item.fileSize &&
-      newItem.fileSize &&
-      Number(item.fileSize) === Number(newItem.fileSize);
-
-    return sameVideo || sameFileName || sameTitle || sameFileSize;
+function isDuplicateVideo(newItem) {
+  return allFirebaseVideos.some(item => {
+    const sameTitle = normalizeText(item.title) && normalizeText(item.title) === normalizeText(newItem.title);
+    const sameVideo = item.video && newItem.video && String(item.video) === String(newItem.video);
+    return sameVideo || sameTitle;
   });
 }
 
-function getCurrentSingleVideoDraft() {
-  const file = videoFile.files[0];
-
-  return {
-    title: titleInput.value || "",
-    video: videoInput.value || "",
-    fileName: file ? file.name : "",
-    fileSize: file ? file.size : 0
-  };
-}
-
-function checkSingleDuplicateLive() {
+function checkDuplicateLive() {
   const warning = document.getElementById("duplicateWarning");
   const addBtn = document.getElementById("singleAddBtn");
+  const draft = { title: titleInput.value, video: videoInput.value };
 
-  const draft = getCurrentSingleVideoDraft();
-
-  const hasAnyData =
-    draft.title ||
-    draft.video ||
-    draft.fileName ||
-    draft.fileSize;
-
-  if (!hasAnyData) {
+  if (!draft.title && !draft.video) {
     warning.innerHTML = "";
     warning.classList.remove("show", "ok");
     addBtn.disabled = false;
-    addBtn.classList.remove("disabled");
     return;
   }
 
-  const duplicate = isDuplicateVideo(draft, getMyVideos());
-
-  if (duplicate) {
-    warning.innerHTML = "⚠️ Такой ролик уже есть. Повторно добавить нельзя.";
+  if (isDuplicateVideo(draft)) {
+    warning.innerHTML = "⚠️ Такой ролик уже есть в Firebase.";
     warning.classList.add("show");
     warning.classList.remove("ok");
     addBtn.disabled = true;
-    addBtn.classList.add("disabled");
   } else {
     warning.innerHTML = "✅ Ролик новый, можно добавлять.";
     warning.classList.add("show", "ok");
     addBtn.disabled = false;
-    addBtn.classList.remove("disabled");
   }
 }
 
-function formatDuration(seconds) {
-  if (!seconds || Number.isNaN(seconds)) return "0:00";
-  const min = Math.floor(seconds / 60);
-  const sec = Math.floor(seconds % 60);
-  return min + ":" + String(sec).padStart(2, "0");
+function renderPreview() {
+  if (videoInput.value) previewVideo.src = videoInput.value;
+  if (imageInput.value) previewImage.src = imageInput.value;
 }
 
-function setCategory(category) {
-  document.getElementById("category").value = category;
-}
+videoInput.addEventListener("input", () => { renderPreview(); checkDuplicateLive(); });
+imageInput.addEventListener("input", renderPreview);
+titleInput.addEventListener("input", checkDuplicateLive);
+document.getElementById("singleAddBtn").addEventListener("click", addVideo);
 
-function addTag(tag) {
-  const input = document.getElementById("tags");
-  const current = input.value
-    .split(",")
-    .map(t => t.trim())
-    .filter(Boolean);
-
-  if (!current.includes(tag)) {
-    current.push(tag);
-  }
-
-  input.value = current.join(", ");
-}
-
-videoFile.addEventListener("change", () => {
-  const file = videoFile.files[0];
-  if (!file) return;
-
-  const localVideoUrl = URL.createObjectURL(file);
-  previewVideo.src = localVideoUrl;
-  videoInput.value = localVideoUrl;
-
-  if (!titleInput.value) {
-    titleInput.value = cleanTitle(file.name);
-  }
-
-  checkSingleDuplicateLive();
-});
-
-previewVideo.addEventListener("loadedmetadata", () => {
-  durationInput.value = formatDuration(previewVideo.duration);
-});
-
-imageFile.addEventListener("change", () => {
-  const file = imageFile.files[0];
-  if (!file) return;
-
-  const localImageUrl = URL.createObjectURL(file);
-  previewImage.src = localImageUrl;
-  imageInput.value = localImageUrl;
-});
-
-titleInput.addEventListener("input", checkSingleDuplicateLive);
-videoInput.addEventListener("input", checkSingleDuplicateLive);
-
-function addVideo() {
-  const list = getMyVideos();
-  const file = videoFile.files[0];
-
+async function addVideo() {
   const item = {
-    id: Date.now(),
     title: titleInput.value || "Без названия",
     category: document.getElementById("category").value || "русское",
-    video: videoInput.value || "https://www.w3schools.com/html/mov_bbb.mp4",
-    image: imageInput.value || "https://picsum.photos/600/380?random=" + Date.now(),
+    video: videoInput.value.trim(),
+    image: imageInput.value.trim() || "https://picsum.photos/600/380?random=" + Date.now(),
     duration: durationInput.value || "0:00",
     views: document.getElementById("views").value || "0",
     premium: document.getElementById("premium").checked,
     date: new Date().toISOString().slice(0, 10),
-    fileName: file ? file.name : "",
-    fileSize: file ? file.size : 0,
-    tags: document.getElementById("tags").value
-      .split(",")
-      .map(t => t.trim())
-      .filter(Boolean)
+    tags: document.getElementById("tags").value.split(",").map(t => t.trim()).filter(Boolean),
+    createdAt: Date.now(),
+    createdAtServer: serverTimestamp()
   };
 
-  if (isDuplicateVideo(item, list)) {
-    alert("Такой ролик уже есть. Повторно не добавляю.");
-    checkSingleDuplicateLive();
-    return;
-  }
+  if (!item.video) { alert("Вставь ссылку на MP4"); return; }
+  if (isDuplicateVideo(item)) { alert("Такой ролик уже есть. Повторно не добавляю."); return; }
 
-  list.unshift(item);
-  saveMyVideos(list);
+  await addDoc(collection(db, "videos"), item);
   resetForm();
-  renderAdmin();
-
-  alert("Ролик добавлен");
+  await loadVideos();
+  alert("Ролик сохранён в Firebase");
 }
 
 function resetForm() {
-  videoFile.value = "";
-  imageFile.value = "";
-  videoInput.value = "";
-  imageInput.value = "";
-  titleInput.value = "";
-  durationInput.value = "";
-  document.getElementById("views").value = "";
-  document.getElementById("tags").value = "";
+  videoInput.value = ""; imageInput.value = ""; titleInput.value = ""; durationInput.value = "";
+  document.getElementById("views").value = ""; document.getElementById("tags").value = "";
   document.getElementById("premium").checked = false;
-  previewVideo.removeAttribute("src");
-  previewImage.removeAttribute("src");
+  previewVideo.removeAttribute("src"); previewImage.removeAttribute("src");
   document.getElementById("duplicateWarning").innerHTML = "";
-  document.getElementById("duplicateWarning").classList.remove("show", "ok");
+}
+
+window.deleteFirebaseVideo = async function (id) {
+  if (!confirm("Удалить этот ролик из Firebase?")) return;
+  await deleteDoc(doc(db, "videos", id));
+  await loadVideos();
+};
+
+async function loadVideos() {
+  const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  allFirebaseVideos.length = 0;
+  snap.docs.forEach(docSnap => allFirebaseVideos.push({ id: docSnap.id, ...docSnap.data() }));
+  renderAdmin();
 }
 
 function renderAdmin() {
-  const list = getMyVideos();
-
-  document.getElementById("adminStats").innerHTML =
-    `Всего добавлено: <b>${list.length}</b> • Сегодня: <b>${list.filter(v => v.date === new Date().toISOString().slice(0,10)).length}</b>`;
-
-  document.getElementById("adminGrid").innerHTML = list.slice(0, 10).map(v => `
+  document.getElementById("adminStats").innerHTML = `Всего в Firebase: <b>${allFirebaseVideos.length}</b>`;
+  document.getElementById("adminGrid").innerHTML = allFirebaseVideos.slice(0, 20).map(v => `
     <div class="card admin-video-card">
       <a href="video.html?id=${v.id}" class="admin-card-link">
         <div class="thumb-wrap">
-          <img class="thumb" src="${v.image}" loading="lazy" />
+          <img class="thumb" src="${v.image || ""}" loading="lazy" />
           ${v.premium ? '<span class="badge">Premium</span>' : ''}
-          <span class="duration">${v.duration}</span>
+          <span class="duration">${v.duration || "0:00"}</span>
         </div>
-
-        <h3>${v.title}</h3>
-
-        <div class="meta">
-          <span>👁 ${v.views}</span>
-          <span>🏷 ${v.category}</span>
-        </div>
+        <h3>${v.title || "Без названия"}</h3>
+        <div class="meta"><span>👁 ${v.views || "0"}</span><span>🏷 ${v.category || "новое"}</span></div>
       </a>
-
-      <button
-        type="button"
-        onclick="deleteVideo(${v.id})"
-        class="delete-btn"
-      >
-        Удалить
-      </button>
+      <button type="button" onclick="deleteFirebaseVideo('${v.id}')" class="delete-btn">Удалить</button>
     </div>
   `).join("");
 }
 
-function deleteVideo(id) {
-  if (!confirm("Удалить этот ролик?")) return;
-
-  const list = getMyVideos().filter(v => Number(v.id) !== Number(id));
-
-  saveMyVideos(list);
-  renderAdmin();
-}
-
-function exportData() {
-  const my = getMyVideos();
-  const merged = [...my, ...(typeof videos !== "undefined" ? videos : [])];
-  const content = "const videos = " + JSON.stringify(merged, null, 2) + ";";
-
-  const blob = new Blob([content], { type: "text/javascript" });
-  const url = URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "data.js";
-  a.click();
-
-  URL.revokeObjectURL(url);
-}
-
-function clearMyVideos() {
-  if (!confirm("Удалить все добавленные видео?")) return;
-  localStorage.removeItem("my_videos");
-  renderAdmin();
-}
-
-renderAdmin();
+loadVideos();
 </script>
 </body>
 </html>
