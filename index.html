@@ -3,17 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SEX-campos — русские видео, POV, домашнее, Reels</title>
-<meta name="description" content="SEX-campos — новые ролики каждый день: русские видео, POV, домашнее, Reels, категории, модели и подборки.">
-<meta name="keywords" content="видео, reels, домашнее, POV, русское, подборки, новые ролики, модели, категории">
+
+<title>Русское порно онлайн — SEX-campos</title>
+<meta name="description" content="Интересное русское порно онлайн: новые ролики, reels, модели, теги и подборки каждый день.">
+<meta name="keywords" content="русское порно онлайн, порно, видео, reels, pov, модели, теги">
 <meta name="robots" content="index, follow">
-<meta property="og:title" content="SEX-campos">
-<meta property="og:description" content="Новые ролики каждый день">
+
+<meta property="og:title" content="Русское порно онлайн — SEX-campos">
+<meta property="og:description" content="Новые ролики, reels, модели и подборки каждый день.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://sex-campos.online">
 <meta property="og:image" content="https://sex-campos.online/preview.jpg">
-<meta name="theme-color" content="#ff2d6f">
+
 <link rel="icon" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
+<meta name="theme-color" content="#e73762">
+
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -27,64 +32,58 @@
 </div>
 
 <header class="topbar">
-  <div class="logo-row">
-    <a class="brand" href="index.html" aria-label="SEX-campos">
-      <img class="brand-logo" src="logo.png" alt="SEX-campos" onerror="this.style.display='none'">
-      <span><b>SEX</b>-campos</span>
-    </a>
-    <div class="top-icons"><span>💬</span><span>👤</span><span>⚡</span><span>🔎</span></div>
+  <div class="brand">
+    <img src="logo.jpg" class="site-logo" onerror="this.style.display='none'">
+    <div>
+      <div class="logo">SEX-campos</div>
+      <div class="brand-sub">русское порно онлайн</div>
+    </div>
   </div>
-  <button class="menu-btn" onclick="openMenu()">☰ Открыть меню</button>
+
+  <input id="searchInput" class="main-search" placeholder="Поиск моделей и тегов...">
+
+  <button class="menu-btn" onclick="toggleTagMenu()">☰ Открыть меню</button>
+
+  <div class="tag-menu" id="tagMenu">
+    <div class="category-scroll" id="categoryList"></div>
+  </div>
+
+  <div class="sort-row top-sort">
+    <button onclick="setSort('new')">Новые</button>
+    <button onclick="setSort('trend')">В тренде</button>
+    <button onclick="setSort('premium')">Премиум</button>
+  </div>
 </header>
 
-<div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-<aside class="side-menu" id="sideMenu">
-  <div class="side-head"><div><b>SEX-campos</b><span>меню сайта</span></div><button onclick="closeMenu()">×</button></div>
-  <a href="index.html">🏠 Главная</a>
-  <a href="reels.html">📱 Reels</a>
-  <a href="admin.html">⚙️ Admin</a>
-  <a href="https://t.me/sex_campos" target="_blank">📢 Разместить рекламу</a>
-  <a href="dmca.html">📄 DMCA</a>
-  <a href="18.html">🔞 18+</a>
-  <a href="terms.html">📜 Правила</a>
-  <a href="privacy.html">🔐 Privacy</a>
-</aside>
+<main>
+  <a class="hero-ad" href="https://t.me/sex_campos" target="_blank">
+    <b>🔥 Тут может быть ваша реклама</b>
+    <span>Разместить рекламу на SEX-campos</span>
+  </a>
 
-<main class="page-wrap">
-  <section class="hero-seo">
-    <div class="hero-fire">🔥</div>
-    <div>
-      <h1>Новые ролики каждый день</h1>
-      <p>На SEX-campos публикуются новые подборки, POV, Reels и популярные видео. Удобный поиск по тегам, категориям и моделям помогает быстрее найти нужную подборку.</p>
-    </div>
+  <section class="daily-small">
+    <b>Новые ролики каждый день</b>
+    <span>Свежие видео, reels, модели и теги добавляются регулярно.</span>
   </section>
 
-  <section class="controls-card">
-    <div class="sort-row">
-      <button class="sort-btn active" onclick="setSort('popular')">👍 релевантные</button>
-      <button class="sort-btn" onclick="setSort('new')">◴ новые</button>
-      <button class="sort-btn" onclick="setSort('trend')">🔥 в тренде</button>
-      <button class="sort-btn" onclick="setPremium()">⚡ premium</button>
-    </div>
-    <input id="searchInput" class="search" type="text" placeholder="Поиск видео, тегов, моделей...">
-    <div class="category-scroll" id="categoryList"></div>
+  <section class="seo-text">
+    <h1>Русское порно онлайн</h1>
+    <p>На SEX-campos публикуются новые видео, reels, популярные подборки, модели и теги. Удобный поиск помогает быстро находить интересные ролики.</p>
   </section>
-
-  <a class="top-ad" href="https://t.me/sex_campos" target="_blank">🔥 Тут может быть ваша реклама</a>
 
   <div class="section-head">
     <h2 id="pageTitle">Релевантные видео</h2>
-    <span id="videoCount" class="count">загрузка...</span>
+    <span id="videoCount">0 видео</span>
   </div>
 
   <div class="grid" id="videoGrid"></div>
+
   <button id="loadMoreBtn" class="load-more">Показать ещё</button>
 </main>
 
 <div class="bottom-menu">
   <a href="index.html">Главная</a>
   <a href="reels.html">Reels</a>
-  <a href="#" onclick="setSort('new')">Новые</a>
   <a href="admin.html">Admin</a>
 </div>
 
