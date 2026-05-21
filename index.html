@@ -35,23 +35,24 @@
   <div class="brand">
     <img src="logo.jpg" class="site-logo" onerror="this.style.display='none'">
     <div>
-      <div class="logo">SEX-campos</div>
+      <div class="logo"><span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span></div>
       <div class="brand-sub">русское порно онлайн</div>
     </div>
   </div>
 
   <input id="searchInput" class="main-search" placeholder="Поиск моделей и тегов...">
 
-  <button class="menu-btn" onclick="toggleTagMenu()">☰ Открыть меню</button>
+  <button class="menu-btn" id="menuBtn" type="button">☰ Открыть меню</button>
 
   <div class="tag-menu" id="tagMenu">
+    <div class="tag-menu-title">Теги и модели для поиска</div>
     <div class="category-scroll" id="categoryList"></div>
   </div>
 
   <div class="sort-row top-sort">
-    <button onclick="setSort('new')">Новые</button>
-    <button onclick="setSort('trend')">В тренде</button>
-    <button onclick="setSort('premium')">Премиум</button>
+    <button type="button" onclick="setSort('new')">Новые</button>
+    <button type="button" onclick="setSort('trend')">В тренде</button>
+    <button type="button" onclick="setSort('premium')">Премиум</button>
   </div>
 </header>
 

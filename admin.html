@@ -5,83 +5,377 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | SEX-campos</title>
 <link rel="stylesheet" href="style.css">
-<style>
-.admin-card-link{display:block;color:inherit;text-decoration:none}.delete-btn,.edit-btn{width:100%;margin-top:8px;color:#fff;padding:10px;border-radius:10px;font-weight:700}.delete-btn{background:#321018;border:1px solid #5a1c2b}.edit-btn{background:#111827;border:1px solid #374151}.tag-section{border-top:1px dashed #2a2d35;padding-top:10px;margin-top:10px}.tag-section-title{font-size:14px;font-weight:800;color:#ddd;margin:0 0 8px}.auto-status{display:none;margin:10px 0;padding:10px;border-radius:10px;background:#0d2415;border:1px solid #2ebd62;color:#fff;font-size:13px}.auto-status.show{display:block}.edit-mode-box{display:none;background:#1b1320;border:1px solid #e73762;color:white;padding:10px;border-radius:12px;margin-bottom:12px;font-weight:800}.edit-mode-box.show{display:block}.hidden-tags-box{display:none}.admin-fast-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.admin-fast-actions button{margin:0;width:100%}
-</style>
 </head>
-<body>
+<body class="admin-body">
+
 <script>
-const password="12345";const userPass=prompt("Введите пароль");if(userPass!==password){document.body.innerHTML='<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>';}
-</script>
-<header class="topbar admin-topbar"><a class="back" href="index.html">← На сайт</a><div class="logo">SEX-campos Admin</div></header>
-<main class="admin-page">
-  <div class="admin-card">
-    <h2>Быстрое добавление</h2>
-    <p class="admin-note">Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги, категория и разделы подбираются сами. Потом добавь только превью, если оно не угадалось.</p>
-    <label>Ссылка на ролик / скачивание / MP4</label>
-    <input id="sourceUrl" class="input" placeholder="https://site.com/video-name.mp4">
-    <div class="admin-fast-actions">
-      <button class="dark-btn" onclick="smartFill()">⚡ Автозаполнить</button>
-      <button class="dark-btn" onclick="randomizeMeta()">🎲 Рандом теги</button>
+const password = "12345";
+const userPass = prompt("Введите пароль");
+
+if (userPass !== password) {
+  document.body.innerHTML = `
+    <div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">
+      Доступ запрещён
     </div>
-    <div id="autoStatus" class="auto-status"></div>
+  `;
+}
+</script>
+
+<header class="admin-header">
+  <a href="index.html">← На сайт</a>
+  <div class="admin-logo"><span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span> Admin</div>
+</header>
+
+<main class="admin-main">
+
+<section class="admin-panel">
+  <h1>Быстрое добавление</h1>
+  <p>Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги, категория и разделы подбираются сами.</p>
+
+  <label>Ссылка на ролик / скачивание / MP4</label>
+  <input id="sourceUrl" class="admin-input" placeholder="https://site.com/video-name">
+
+  <div class="admin-actions">
+    <button type="button" onclick="smartFill()">⚡ Автозаполнить</button>
+    <button type="button" onclick="randomTags()">🎲 Рандом теги</button>
   </div>
 
-  <div class="admin-card">
-    <div id="editModeBox" class="edit-mode-box">✏️ Редактирование <button class="dark-btn" onclick="cancelEdit()" style="margin-top:8px">Отменить</button></div>
-    <h2 id="formTitle">Добавить ролик</h2>
-    <label>MP4 ссылка</label><input id="video" class="input" placeholder="https://site.com/video.mp4">
-    <label>Превью</label><input id="image" class="input" placeholder="https://site.com/preview.jpg">
-    <div class="admin-preview"><video id="previewVideo" controls playsinline></video><img id="previewImage" alt="preview"></div>
-    <label>Название</label><input id="title" class="input" placeholder="Название видео">
-    <label>Модели</label><input id="models" class="input" placeholder="Kiss Cat, Shalina Devine">
-    <div id="duplicateWarning" class="duplicate-warning"></div>
-    <div class="admin-compact-row"><div><label>Категория</label><select id="category" class="input"></select></div><div><label>Просмотры</label><input id="views" class="input" placeholder="0"></div></div>
-    <label>Теги</label><input id="tags" class="input" placeholder="заполняются автоматически">
-    <div class="admin-compact-row"><div><label>Длительность</label><input id="duration" class="input" placeholder="12:45"></div><label class="check" style="align-self:end"><input id="premium" type="checkbox"> Premium</label></div>
-    <p class="admin-mini-note">Автоматически добавляются базовые SEO-теги и случайные разделы, чтобы ролики не были одинаковыми.</p>
-    <details><summary>Ручные теги и модели</summary><div id="tagGroups"></div></details>
-    <button id="singleAddBtn" class="load-more">Добавить в Firebase</button>
+  <div id="linkWarning" class="link-warning"></div>
+</section>
+
+<section class="admin-panel">
+  <h2 id="formTitle">Добавить ролик</h2>
+
+  <label>MP4 ссылка</label>
+  <input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
+
+  <label>Превью</label>
+  <input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
+
+  <div class="admin-preview">
+    <video id="previewVideo" controls playsinline></video>
+    <img id="previewImage" alt="preview">
   </div>
 
-  <div class="admin-card"><h2>Видео в Firebase</h2><div class="admin-stats" id="adminStats">загрузка...</div><div class="grid compact-grid" id="adminGrid"></div></div>
+  <label>Название</label>
+  <input id="title" class="admin-input" placeholder="Название видео">
+
+  <label>Модели</label>
+  <input id="models" class="admin-input" placeholder="Kiss Cat, Shalina Devine">
+
+  <label>Категория</label>
+  <select id="category" class="admin-input"></select>
+
+  <label>Просмотры</label>
+  <input id="views" class="admin-input" placeholder="0">
+
+  <label>Теги</label>
+  <textarea id="tags" class="admin-input admin-textarea" placeholder="заполняются автоматически"></textarea>
+
+  <label>Длительность</label>
+  <input id="duration" class="admin-input" placeholder="12:45">
+
+  <label class="admin-check">
+    <input id="premium" type="checkbox"> Premium
+  </label>
+
+  <button id="saveBtn" class="admin-save" type="button">Добавить в Firebase</button>
+  <button id="cancelEditBtn" class="admin-secondary" type="button" style="display:none">Отменить редактирование</button>
+</section>
+
+<section class="admin-panel">
+  <h2>Видео в Firebase</h2>
+  <div id="adminStats" class="admin-stats">загрузка...</div>
+  <div id="adminGrid" class="admin-grid"></div>
+</section>
+
 </main>
-<script type="module">
-import { db, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, updateDoc } from "./firebase.js";
 
-const categoriesRu=["русское","женский куколдинг","грязные разговоры","с разговорами","свингеры","измена","красивое","соблазнение парня","соблазнение девушки","pov","непостановочное","спящие","крупным планом","чулки","мжм","жмж","бдсм","сексвайф","в поезде","в тренде","новые"];
-const modelPresets=["Kiss Cat","Shalina Devine"];
-const DEFAULT_TAGS=["русское","грязные разговоры","с разговорами","спящие","измена","pov","непостановочное","красивое","соблазнение девушки","мастурбируют девушке","дрочат парню","красивый минет","меж сисек","лежа на спине","куни","минет","женский куколдинг","свингеры","соблазнение парня","муж и жена","пара","красивое белье","высокие девушки","загорелые","худенькие","в халате","в пеньюаре","смуглые","упругие сиськи","большие сиськи","красивые сиськи","с тату","интимные стрижки","силиконовая грудь","красивые киски","домашнее","в спальне","на диване","кончают внутрь","оргазм","блондинки","русые","шатенки","мамочка","милашки","горячие","взаимная мастурбация","ножки","одновременный оргазм"];
-const tagGroups=[{title:"Модели",target:"models",tags:modelPresets},{title:"Быстрые теги",tags:DEFAULT_TAGS}];
-let editingId=null; const allFirebaseVideos=[];
-const sourceUrlInput=document.getElementById("sourceUrl"), videoInput=document.getElementById("video"), imageInput=document.getElementById("image"), previewVideo=document.getElementById("previewVideo"), previewImage=document.getElementById("previewImage"), titleInput=document.getElementById("title"), modelsInput=document.getElementById("models"), durationInput=document.getElementById("duration"), tagsInput=document.getElementById("tags");
-document.getElementById("category").innerHTML=categoriesRu.map(c=>`<option value="${c}">${c}</option>`).join("");
-document.getElementById("tagGroups").innerHTML=tagGroups.map(g=>`<div class="tag-section"><div class="tag-section-title">⊙ ${g.title}</div><div class="quick-row wrap">${g.tags.map(tag=>`<button type="button" onclick="${g.target==='models'?`addModel('${tag}')`:`addTag('${tag}')`}">${g.target==='models'?tag:'+ '+tag}</button>`).join("")}</div></div>`).join("");
-window.addTag=function(tag){const cur=tagsInput.value.split(',').map(t=>t.trim()).filter(Boolean); if(!cur.includes(tag)) cur.push(tag); tagsInput.value=cur.join(', ');};
-window.addModel=function(model){const cur=modelsInput.value.split(',').map(t=>t.trim()).filter(Boolean); if(!cur.includes(model)) cur.push(model); modelsInput.value=cur.join(', ');};
-function normalizeText(v){return String(v||'').toLowerCase().trim().replace(/\s+/g,' ')}
-function cleanTextFromUrl(url){let u=String(url||''); try{const obj=new URL(u); for(const key of ['title','name','filename','file']){const val=obj.searchParams.get(key); if(val) return decodeURIComponent(val);} }catch(e){} return decodeURIComponent(u).replace(/^https?:\/\//,'').replace(/[?#].*$/,'').replace(/\.[a-z0-9]{2,5}$/i,'').replace(/[\/_\-.+]+/g,' ').replace(/\s+/g,' ').trim();}
-function titleFromUrl(url){let text=cleanTextFromUrl(url).replace(/sex\s*studentki/gi,'').replace(/sex\s*campos/gi,'').replace(/live|link|download|video|watch/gi,'').replace(/\bcs\b/gi,'').replace(/\b[a-zA-Z0-9]{14,}\b/g,'').replace(/\s+/g,' ').trim(); const words=text.split(' ').filter(Boolean).slice(-10); return words.join(' ')||'Новое видео';}
-function guessPreviewFromUrl(url){const clean=String(url||'').split('?')[0]; if(/\.(jpg|jpeg|png|webp)$/i.test(clean)) return url; if(/\.(mp4|webm)$/i.test(clean)) return clean.replace(/\.(mp4|webm)$/i,'.jpg').replace('/videos/','/thumbs/').replace('/video/','/thumbs/'); return '';}
-function guessCategory(text){const t=normalizeText(text); const rules=[["куколдинг","женский куколдинг"],["cuckold","женский куколдинг"],["грязн","грязные разговоры"],["talk","с разговорами"],["разговор","с разговорами"],["свинг","свингеры"],["измен","измена"],["cheat","измена"],["pov","pov"],["рус","русское"],["russian","русское"],["home","домашнее"],["дом","домашнее"],["bdsm","бдсм"],["мжм","мжм"],["жмж","жмж"],["train","в поезде"],["поезд","в поезде"]]; for(const [n,c] of rules){if(t.includes(n))return c} return categoriesRu[Math.floor(Math.random()*Math.min(10,categoriesRu.length))];}
-function smartTagsFromText(text){const t=normalizeText(text); const aliases={"kiss cat":"Kiss Cat","shalina devine":"Shalina Devine","russian":"русское","rus":"русское","cuckold":"женский куколдинг","dirty talk":"грязные разговоры","talking":"с разговорами","cheating":"измена","cheat":"измена","beautiful":"красивое","home":"домашнее","bedroom":"в спальне","sofa":"на диване","orgasm":"оргазм","blonde":"блондинки","brunette":"шатенки","pov":"pov"}; const found=[]; DEFAULT_TAGS.forEach(tag=>{if(t.includes(normalizeText(tag)))found.push(tag)}); Object.entries(aliases).forEach(([n,tag])=>{if(t.includes(n)&&!found.includes(tag))found.push(tag)}); return found;}
-function smartModelsFromText(text){const t=normalizeText(text); return modelPresets.filter(m=>t.includes(normalizeText(m)));}
-function pickRandom(arr,n){return [...arr].sort(()=>Math.random()-.5).slice(0,n)}
-function applyAutoTags(text){const category=guessCategory(text); document.getElementById('category').value=category; const auto=[category,...smartTagsFromText(text),...pickRandom(DEFAULT_TAGS,14)]; tagsInput.value=[...new Set(auto)].join(', '); smartModelsFromText(text).forEach(addModel);}
-window.randomizeMeta=function(){applyAutoTags([sourceUrlInput.value,titleInput.value,videoInput.value].join(' ')); document.getElementById('autoStatus').innerHTML='🎲 Разделы и теги подобраны случайно'; document.getElementById('autoStatus').classList.add('show');};
-window.smartFill=function(){const url=sourceUrlInput.value.trim(); if(!url){alert('Вставь ссылку');return} const text=cleanTextFromUrl(url); const title=titleFromUrl(url); const preview=guessPreviewFromUrl(url); if(!titleInput.value) titleInput.value=title; if(!videoInput.value && /\.(mp4|webm|m3u8)(\?|#|$)/i.test(url)){videoInput.value=url; previewVideo.src=url;} if(!imageInput.value && preview){imageInput.value=preview; previewImage.src=preview;} applyAutoTags(text+' '+title); document.getElementById('autoStatus').innerHTML='✅ Название, категория и теги заполнены. Если превью не появилось — вставь ссылку на картинку вручную.'; document.getElementById('autoStatus').classList.add('show'); checkDuplicateLive();};
-function isDuplicateVideo(newItem){return allFirebaseVideos.some(item=>{if(editingId&&item.id===editingId)return false; const sameTitle=normalizeText(item.title)&&normalizeText(item.title)===normalizeText(newItem.title); const sameVideo=item.video&&newItem.video&&String(item.video)===String(newItem.video); return sameVideo||sameTitle;});}
-function checkDuplicateLive(){const warning=document.getElementById('duplicateWarning'), addBtn=document.getElementById('singleAddBtn'); const draft={title:titleInput.value,video:videoInput.value}; if(!draft.title&&!draft.video){warning.innerHTML='';warning.classList.remove('show','ok');addBtn.disabled=false;return} if(isDuplicateVideo(draft)){warning.innerHTML='⚠️ Такой ролик уже есть';warning.classList.add('show');warning.classList.remove('ok');addBtn.disabled=true}else{warning.innerHTML=editingId?'✅ Можно сохранить изменения':'✅ Можно добавлять';warning.classList.add('show','ok');addBtn.disabled=false}}
-function renderPreview(){if(videoInput.value)previewVideo.src=videoInput.value; if(imageInput.value)previewImage.src=imageInput.value}
-videoInput.addEventListener('input',()=>{renderPreview();checkDuplicateLive()}); imageInput.addEventListener('input',renderPreview); titleInput.addEventListener('input',checkDuplicateLive); document.getElementById('singleAddBtn').addEventListener('click',saveVideo);
-function buildItem(){const modelList=modelsInput.value.split(',').map(t=>t.trim()).filter(Boolean); let tagList=tagsInput.value.split(',').map(t=>t.trim()).filter(Boolean); if(!tagList.length) tagList=pickRandom(DEFAULT_TAGS,16); tagList=[...new Set([...tagList,...pickRandom(DEFAULT_TAGS,8)])]; return {title:titleInput.value||titleFromUrl(sourceUrlInput.value)||'Новое видео',models:modelList,category:document.getElementById('category').value||guessCategory(tagList.join(' ')),video:videoInput.value.trim(),sourceUrl:sourceUrlInput.value.trim(),image:imageInput.value.trim()||'https://picsum.photos/600/380?random='+Date.now(),duration:durationInput.value||'0:00',views:document.getElementById('views').value||String(Math.floor(Math.random()*900+40))+'K',premium:document.getElementById('premium').checked,date:new Date().toISOString().slice(0,10),tags:[...new Set([...modelList,...tagList])],updatedAt:Date.now()};}
-async function saveVideo(){const item=buildItem(); if(!item.video){alert('Вставь прямую MP4 ссылку');return} if(isDuplicateVideo(item)){alert('Такой ролик уже есть');return} if(editingId){await updateDoc(doc(db,'videos',editingId),item); alert('Ролик обновлён')}else{item.createdAt=Date.now(); item.createdAtServer=serverTimestamp(); await addDoc(collection(db,'videos'),item); alert('Ролик сохранён')} resetForm(); await loadVideos();}
-function resetForm(){editingId=null; document.getElementById('formTitle').innerText='Добавить ролик'; document.getElementById('singleAddBtn').innerText='Добавить в Firebase'; document.getElementById('editModeBox').classList.remove('show'); [sourceUrlInput,videoInput,imageInput,titleInput,modelsInput,durationInput,document.getElementById('views'),tagsInput].forEach(i=>i.value=''); document.getElementById('premium').checked=false; previewVideo.removeAttribute('src'); previewImage.removeAttribute('src'); document.getElementById('duplicateWarning').innerHTML=''; document.getElementById('autoStatus').classList.remove('show');}
-window.cancelEdit=()=>{resetForm();checkDuplicateLive()};
-window.editFirebaseVideo=function(id){const item=allFirebaseVideos.find(v=>v.id===id); if(!item)return; editingId=id; document.getElementById('formTitle').innerText='Редактировать ролик'; document.getElementById('singleAddBtn').innerText='Сохранить изменения'; document.getElementById('editModeBox').classList.add('show'); sourceUrlInput.value=item.sourceUrl||''; videoInput.value=item.video||''; imageInput.value=item.image||''; titleInput.value=item.title||''; modelsInput.value=(item.models||[]).join(', '); document.getElementById('category').value=item.category||'русское'; tagsInput.value=(item.tags||[]).filter(tag=>!(item.models||[]).includes(tag)).join(', '); durationInput.value=item.duration||''; document.getElementById('views').value=item.views||''; document.getElementById('premium').checked=Boolean(item.premium); renderPreview(); checkDuplicateLive(); window.scrollTo({top:0,behavior:'smooth'});};
-window.deleteFirebaseVideo=async function(id){if(!confirm('Удалить этот ролик?'))return; await deleteDoc(doc(db,'videos',id)); await loadVideos();};
-async function loadVideos(){const q=query(collection(db,'videos'),orderBy('createdAt','desc')); const snap=await getDocs(q); allFirebaseVideos.length=0; snap.docs.forEach(d=>allFirebaseVideos.push({id:d.id,...d.data()})); renderAdmin();}
-function renderAdmin(){document.getElementById('adminStats').innerHTML=`Всего в Firebase: <b>${allFirebaseVideos.length}</b>`; document.getElementById('adminGrid').innerHTML=allFirebaseVideos.slice(0,20).map(v=>`<div class="card admin-video-card"><a href="video.html?id=${v.id}" class="admin-card-link"><div class="thumb-wrap"><img class="thumb" src="${v.image||''}" loading="lazy">${v.premium?'<span class="badge">Premium</span>':''}<span class="duration">${v.duration||'0:00'}</span></div><h3>${v.title||'Без названия'}</h3><div class="meta"><span>👁 ${v.views||'0'}</span><span>🏷 ${v.category||'новое'}</span></div></a><button type="button" onclick="editFirebaseVideo('${v.id}')" class="edit-btn">Редактировать</button><button type="button" onclick="deleteFirebaseVideo('${v.id}')" class="delete-btn">Удалить</button></div>`).join('');}
+<script type="module">
+import {
+  db,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  doc,
+  query,
+  orderBy,
+  serverTimestamp,
+  updateDoc
+} from "./firebase.js";
+
+const categories = [
+  "русское", "женский куколдинг", "грязные разговоры", "с разговорами",
+  "свингеры", "измена", "красивое", "соблазнение парня",
+  "соблазнение девушки", "pov", "непостановочное", "спящие",
+  "крупным планом", "чулки", "мжм", "жмж", "бдсм", "сексвайф",
+  "в поезде", "в тренде", "новые"
+];
+
+const defaultTags = [
+  "русское", "грязные разговоры", "с разговорами", "спящие", "измена",
+  "pov", "непостановочное", "красивое", "соблазнение девушки",
+  "мастурбируют девушке", "дрочат парню", "красивый минет", "куни",
+  "минет", "муж и жена", "пара", "красивое белье", "высокие девушки",
+  "загорелые", "худенькие", "в халате", "в пеньюаре", "смуглые",
+  "упругие сиськи", "большие сиськи", "красивые сиськи", "с тату",
+  "интимные стрижки", "силиконовая грудь", "красивые киски",
+  "большие члены", "красивые члены", "домашнее", "в спальне",
+  "на диване", "кончают внутрь", "оргазм", "блондинки", "русые",
+  "шатенки", "мамочка", "милашки", "горячие", "взаимная мастурбация",
+  "ножки", "одновременный оргазм"
+];
+
+let firebaseVideos = [];
+let editingId = null;
+
+const sourceUrl = document.getElementById("sourceUrl");
+const videoInput = document.getElementById("video");
+const imageInput = document.getElementById("image");
+const titleInput = document.getElementById("title");
+const modelsInput = document.getElementById("models");
+const categoryInput = document.getElementById("category");
+const viewsInput = document.getElementById("views");
+const tagsInput = document.getElementById("tags");
+const durationInput = document.getElementById("duration");
+const premiumInput = document.getElementById("premium");
+const saveBtn = document.getElementById("saveBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+const previewVideo = document.getElementById("previewVideo");
+const previewImage = document.getElementById("previewImage");
+const warning = document.getElementById("linkWarning");
+
+categoryInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
+
+function getSeenLinks() {
+  try { return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]"); }
+  catch(e) { return []; }
+}
+
+function saveSeenLink(url) {
+  if (!url) return;
+  const list = getSeenLinks().filter(x => x !== url);
+  list.unshift(url);
+  localStorage.setItem("sex_campos_seen_links", JSON.stringify(list.slice(0, 500)));
+}
+
+function checkSeen(input) {
+  const url = input.value.trim();
+  const seen = getSeenLinks();
+  const exists = seen.includes(url) || firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
+
+  if (url && exists) {
+    input.classList.add("seen-link");
+    warning.textContent = "⚠️ Эта ссылка уже встречалась / была добавлена";
+    warning.classList.add("show");
+  } else {
+    input.classList.remove("seen-link");
+    warning.classList.remove("show");
+  }
+}
+
+[sourceUrl, videoInput, imageInput].forEach(input => {
+  input.addEventListener("input", () => {
+    checkSeen(input);
+    renderPreview();
+  });
+});
+
+function cleanFromUrl(url) {
+  return decodeURIComponent(String(url || ""))
+    .replace(/^https?:\\/\\//, "")
+    .replace(/[?#].*$/, "")
+    .replace(/\\.[a-z0-9]{2,5}$/i, "")
+    .replace(/[\\/_\\-.+]+/g, " ")
+    .replace(/\\b[a-zA-Z0-9]{16,}\\b/g, "")
+    .replace(/sex\\s*studentki|live|link|download|video|mp4/gi, "")
+    .replace(/\\s+/g, " ")
+    .trim();
+}
+
+function guessCategory(text) {
+  const t = text.toLowerCase();
+  if (t.includes("pov")) return "pov";
+  if (t.includes("измен") || t.includes("cheat")) return "измена";
+  if (t.includes("разговор") || t.includes("talk")) return "с разговорами";
+  if (t.includes("куколд") || t.includes("cuckold")) return "женский куколдинг";
+  if (t.includes("bdsm") || t.includes("бдсм")) return "бдсм";
+  return categories[Math.floor(Math.random() * Math.min(categories.length, 12))];
+}
+
+function tagsFromText(text) {
+  const t = text.toLowerCase();
+  const found = defaultTags.filter(tag => t.includes(tag.toLowerCase()));
+  while (found.length < 10) {
+    const random = defaultTags[Math.floor(Math.random() * defaultTags.length)];
+    if (!found.includes(random)) found.push(random);
+  }
+  return found.slice(0, 16);
+}
+
+function guessPreview(url) {
+  const clean = String(url || "").split("?")[0];
+
+  if (/\\.(jpg|jpeg|png|webp)$/i.test(clean)) return url;
+
+  if (/\\.(mp4|webm)$/i.test(clean)) {
+    return clean
+      .replace(/\\.(mp4|webm)$/i, ".jpg")
+      .replace("/videos/", "/thumbs/")
+      .replace("/video/", "/thumbs/");
+  }
+
+  return "";
+}
+
+window.smartFill = function () {
+  const url = sourceUrl.value.trim();
+  if (!url) return alert("Вставь ссылку");
+
+  const text = cleanFromUrl(url);
+  const title = text || "Новое видео";
+  const category = guessCategory(text);
+  const tags = tagsFromText(text);
+
+  titleInput.value = title;
+  categoryInput.value = category;
+  tagsInput.value = tags.join(", ");
+
+  if (/\\.(mp4|webm|m3u8)(\\?|#|$)/i.test(url)) {
+    videoInput.value = url;
+  }
+
+  const preview = guessPreview(url);
+  if (preview && !imageInput.value) {
+    imageInput.value = preview;
+  }
+
+  if (!viewsInput.value) viewsInput.value = Math.floor(Math.random() * 900000) + 10000;
+
+  renderPreview();
+  checkSeen(sourceUrl);
+};
+
+window.randomTags = function () {
+  const tags = [];
+  while (tags.length < 14) {
+    const t = defaultTags[Math.floor(Math.random() * defaultTags.length)];
+    if (!tags.includes(t)) tags.push(t);
+  }
+  tagsInput.value = tags.join(", ");
+  categoryInput.value = tags[0] || "русское";
+};
+
+function renderPreview() {
+  if (videoInput.value) previewVideo.src = videoInput.value;
+  if (imageInput.value) previewImage.src = imageInput.value;
+}
+
+function getItem() {
+  const models = modelsInput.value.split(",").map(x => x.trim()).filter(Boolean);
+  const tags = tagsInput.value.split(",").map(x => x.trim()).filter(Boolean);
+  return {
+    title: titleInput.value || "Без названия",
+    sourceUrl: sourceUrl.value.trim(),
+    video: videoInput.value.trim(),
+    image: imageInput.value.trim() || "preview.jpg",
+    models,
+    category: categoryInput.value || "русское",
+    views: viewsInput.value || "0",
+    tags: [...new Set([...models, ...tags])],
+    duration: durationInput.value || "0:00",
+    premium: premiumInput.checked,
+    updatedAt: Date.now()
+  };
+}
+
+async function saveVideo() {
+  const item = getItem();
+  if (!item.video) return alert("Вставь MP4 ссылку");
+
+  if (editingId) {
+    await updateDoc(doc(db, "videos", editingId), item);
+    alert("Ролик обновлён");
+  } else {
+    item.createdAt = Date.now();
+    item.createdAtServer = serverTimestamp();
+    await addDoc(collection(db, "videos"), item);
+    alert("Ролик добавлен");
+  }
+
+  [item.sourceUrl, item.video, item.image].forEach(saveSeenLink);
+  resetForm();
+  await loadVideos();
+}
+
+saveBtn.addEventListener("click", saveVideo);
+
+cancelEditBtn.addEventListener("click", () => resetForm());
+
+function resetForm() {
+  editingId = null;
+  saveBtn.textContent = "Добавить в Firebase";
+  cancelEditBtn.style.display = "none";
+  document.getElementById("formTitle").textContent = "Добавить ролик";
+  [sourceUrl, videoInput, imageInput, titleInput, modelsInput, viewsInput, tagsInput, durationInput].forEach(i => i.value = "");
+  premiumInput.checked = false;
+  previewVideo.removeAttribute("src");
+  previewImage.removeAttribute("src");
+}
+
+window.editVideo = function(id) {
+  const v = firebaseVideos.find(x => x.id === id);
+  if (!v) return;
+
+  editingId = id;
+  document.getElementById("formTitle").textContent = "Редактировать ролик";
+  saveBtn.textContent = "Сохранить изменения";
+  cancelEditBtn.style.display = "block";
+
+  sourceUrl.value = v.sourceUrl || "";
+  videoInput.value = v.video || "";
+  imageInput.value = v.image || "";
+  titleInput.value = v.title || "";
+  modelsInput.value = Array.isArray(v.models) ? v.models.join(", ") : "";
+  categoryInput.value = v.category || "русское";
+  viewsInput.value = v.views || "";
+  tagsInput.value = Array.isArray(v.tags) ? v.tags.join(", ") : "";
+  durationInput.value = v.duration || "";
+  premiumInput.checked = !!v.premium;
+
+  renderPreview();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+window.deleteVideo = async function(id) {
+  if (!confirm("Удалить ролик?")) return;
+  await deleteDoc(doc(db, "videos", id));
+  await loadVideos();
+};
+
+async function loadVideos() {
+  const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  firebaseVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  renderAdmin();
+}
+
+function renderAdmin() {
+  document.getElementById("adminStats").textContent = `Всего видео: ${firebaseVideos.length}`;
+  document.getElementById("adminGrid").innerHTML = firebaseVideos.slice(0, 30).map(v => `
+    <div class="admin-video-card">
+      <img src="${v.image || "preview.jpg"}">
+      <div>
+        <b>${v.title || "Без названия"}</b>
+        <span>${v.category || "новое"}</span>
+      </div>
+      <button onclick="editVideo('${v.id}')">Редактировать</button>
+      <button class="danger" onclick="deleteVideo('${v.id}')">Удалить</button>
+    </div>
+  `).join("");
+}
+
 loadVideos();
 </script>
 </body>

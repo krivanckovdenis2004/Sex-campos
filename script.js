@@ -11,97 +11,141 @@ const searchInput = document.getElementById("searchInput");
 const categoryList = document.getElementById("categoryList");
 const pageTitle = document.getElementById("pageTitle");
 const videoCount = document.getElementById("videoCount");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const menuBtn = document.getElementById("menuBtn");
 
 let allVideos = [];
 let currentSort = "popular";
 let currentTag = "all";
+let visibleCount = 12;
 
-const randomViews = () => {
-  return Math.floor(Math.random() * 900000) + 10000;
+window.enterSite = function () {
+  const ageGate = document.getElementById("ageGate");
+  if (ageGate) ageGate.style.display = "none";
+  localStorage.setItem("age_ok", "yes");
 };
 
-const randomWatching = () => {
-  return Math.floor(Math.random() * 500) + 20;
+if (localStorage.getItem("age_ok") === "yes") {
+  const ageGate = document.getElementById("ageGate");
+  if (ageGate) ageGate.style.display = "none";
+}
+
+window.toggleTagMenu = function () {
+  const menu = document.getElementById("tagMenu");
+  if (!menu) return;
+
+  menu.classList.toggle("show");
+
+  const isOpen = menu.classList.contains("show");
+  if (menuBtn) menuBtn.textContent = isOpen ? "× Закрыть меню" : "☰ Открыть меню";
 };
+
+menuBtn?.addEventListener("click", window.toggleTagMenu);
 
 function normalizeTags(tags) {
   if (!tags) return [];
 
-  if (Array.isArray(tags)) return tags;
+  if (Array.isArray(tags)) {
+    return tags.map(t => String(t).trim()).filter(Boolean);
+  }
 
-  return tags
+  return String(tags)
     .split(",")
     .map(t => t.trim())
     .filter(Boolean);
 }
 
+function viewsNumber(value) {
+  const n = parseFloat(String(value || "0").replace(",", ".")) || 0;
+  const t = String(value || "").toLowerCase();
+
+  if (t.includes("m")) return n * 1000000;
+  if (t.includes("k")) return n * 1000;
+
+  return n;
+}
+
+function randomWatching(id) {
+  return 20 + (String(id).split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 17) % 480;
+}
+
 function createCard(v) {
-  const card = document.createElement("a");
+  const a = document.createElement("a");
 
-  card.href = `video.html?id=${v.id}`;
-  card.className = "video-card";
+  a.href = `video.html?id=${v.id}`;
+  a.className = "card video-card";
 
-  const views = randomViews();
-  const watching = randomWatching();
-
-  const tags = normalizeTags(v.tags);
-
-  card.innerHTML = `
+  a.innerHTML = `
     <div class="thumb-wrap">
-
-      <img
-        src="${v.image || "logo.jpg"}"
-        class="thumb"
-      >
-
-      <div class="duration">
-        ${v.duration || "13:43"}
-      </div>
-
+      <img src="${v.image || "preview.jpg"}" class="thumb" loading="lazy">
+      <video src="${v.video || ""}" muted playsinline preload="metadata" class="hover-preview"></video>
+      ${v.premium ? '<span class="badge">Premium</span>' : ''}
+      <span class="duration">${v.duration || "0:00"}</span>
     </div>
 
-    <div class="video-info">
+    <h3>${v.title || "Без названия"}</h3>
 
-      <h3>
-        ${v.title || "Без названия"}
-      </h3>
-
-      <div class="meta">
-        👁 ${views}
-        <span class="watching">
-          🟢 ${watching} смотрят
-        </span>
-      </div>
-
-      <div class="tag-list">
-        ${tags
-          .slice(0, 5)
-          .map(
-            t => `
-            <span class="tag">
-              + ${t}
-            </span>
-          `
-          )
-          .join("")}
-      </div>
-
+    <div class="meta">
+      <span>👁 ${v.views || "0"}</span>
+      <span>🟢 ${randomWatching(v.id)} смотрят</span>
+      <span>🏷 ${v.category || "новое"}</span>
     </div>
   `;
 
-  return card;
+  const video = a.querySelector(".hover-preview");
+  const img = a.querySelector(".thumb");
+
+  function preview() {
+    if (!video || !v.video) return;
+
+    img.style.opacity = ".2";
+    video.style.opacity = "1";
+
+    try {
+      video.currentTime = Math.min(2 + Math.random() * 8, 10);
+    } catch (e) {}
+
+    video.play().catch(() => {});
+  }
+
+  function stop() {
+    if (!video) return;
+
+    video.pause();
+    video.style.opacity = "0";
+    img.style.opacity = "1";
+  }
+
+  a.addEventListener("touchstart", preview, { passive: true });
+  a.addEventListener("mouseenter", preview);
+  a.addEventListener("mouseleave", stop);
+  a.addEventListener("touchend", () => setTimeout(stop, 650), { passive: true });
+
+  return a;
 }
 
 function renderVideos(list) {
   if (!grid) return;
 
+  const visible = list.slice(0, visibleCount);
+
   grid.innerHTML = "";
 
-  videoCount.textContent = `${list.length} видео`;
+  if (videoCount) {
+    videoCount.textContent = `${list.length} видео`;
+  }
 
-  list.forEach(v => {
-    grid.appendChild(createCard(v));
-  });
+  if (!visible.length) {
+    grid.innerHTML = `<div class="empty-state"><h3>Пока нет видео</h3><p>Добавь ролики через Admin.</p></div>`;
+    if (loadMoreBtn) loadMoreBtn.style.display = "none";
+    return;
+  }
+
+  visible.forEach(v => grid.appendChild(createCard(v)));
+
+  if (loadMoreBtn) {
+    loadMoreBtn.style.display = visible.length < list.length ? "block" : "none";
+  }
 }
 
 function buildTags() {
@@ -111,123 +155,142 @@ function buildTags() {
 
   allVideos.forEach(v => {
     normalizeTags(v.tags).forEach(t => tags.add(t));
+
+    if (v.category) tags.add(v.category);
+
+    if (Array.isArray(v.models)) {
+      v.models.forEach(m => tags.add(m));
+    }
   });
 
-  categoryList.innerHTML = `
-    <button class="cat-btn active">
-      + все
-    </button>
-  `;
+  categoryList.innerHTML = "";
+
+  const allBtn = document.createElement("button");
+  allBtn.className = "category-btn active";
+  allBtn.type = "button";
+  allBtn.textContent = "+ все";
+  allBtn.onclick = () => selectTag("all", allBtn);
+  categoryList.appendChild(allBtn);
 
   [...tags]
-    .slice(0, 30)
+    .filter(Boolean)
+    .slice(0, 120)
     .forEach(tag => {
       const btn = document.createElement("button");
-
-      btn.className = "cat-btn";
-
+      btn.className = "category-btn";
+      btn.type = "button";
       btn.textContent = `+ ${tag}`;
 
-      btn.onclick = () => {
-        currentTag = tag;
-
-        document
-          .querySelectorAll(".cat-btn")
-          .forEach(b => b.classList.remove("active"));
-
-        btn.classList.add("active");
-
-        filterVideos();
-      };
+      btn.onclick = () => selectTag(tag, btn);
 
       categoryList.appendChild(btn);
     });
 }
 
+function selectTag(tag, btn) {
+  currentTag = tag;
+  visibleCount = 12;
+
+  document
+    .querySelectorAll(".category-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  btn.classList.add("active");
+
+  if (tag !== "all" && searchInput) {
+    searchInput.value = tag;
+  }
+
+  filterVideos();
+}
+
 function filterVideos() {
-  let filtered = [...allVideos];
+  let list = [...allVideos];
 
-  const search = searchInput?.value
-    ?.toLowerCase()
-    ?.trim();
+  const s = searchInput?.value?.toLowerCase().trim();
 
-  if (search) {
-    filtered = filtered.filter(v => {
-      const tags = normalizeTags(v.tags).join(" ");
+  if (s) {
+    list = list.filter(v => {
+      const tags = normalizeTags(v.tags).join(" ").toLowerCase();
+      const models = Array.isArray(v.models) ? v.models.join(" ").toLowerCase() : "";
 
       return (
-        v.title?.toLowerCase().includes(search) ||
-        tags.toLowerCase().includes(search)
+        String(v.title || "").toLowerCase().includes(s) ||
+        String(v.category || "").toLowerCase().includes(s) ||
+        tags.includes(s) ||
+        models.includes(s)
       );
     });
   }
 
   if (currentTag !== "all") {
-    filtered = filtered.filter(v =>
-      normalizeTags(v.tags).includes(currentTag)
+    list = list.filter(v =>
+      normalizeTags(v.tags).includes(currentTag) ||
+      v.category === currentTag ||
+      (Array.isArray(v.models) && v.models.includes(currentTag))
     );
   }
 
   if (currentSort === "new") {
-    filtered.reverse();
-
-    pageTitle.textContent = "Новые видео";
+    list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    if (pageTitle) pageTitle.textContent = "Новые видео";
+  } else if (currentSort === "trend") {
+    list.sort((a, b) => viewsNumber(b.views) - viewsNumber(a.views));
+    if (pageTitle) pageTitle.textContent = "В тренде";
+  } else if (currentSort === "premium") {
+    list = list.filter(v => v.premium);
+    if (pageTitle) pageTitle.textContent = "Премиум";
+  } else {
+    if (pageTitle) pageTitle.textContent = "Релевантные видео";
   }
 
-  if (currentSort === "trend") {
-    filtered.sort(() => Math.random() - 0.5);
-
-    pageTitle.textContent = "🔥 В тренде";
-  }
-
-  if (currentSort === "popular") {
-    pageTitle.textContent = "Релевантные видео";
-  }
-
-  renderVideos(filtered);
+  renderVideos(list);
 }
 
-window.setSort = type => {
+window.setSort = function (type) {
   currentSort = type;
-
+  visibleCount = 12;
   filterVideos();
 };
+
+searchInput?.addEventListener("input", () => {
+  currentTag = "all";
+  visibleCount = 12;
+
+  document
+    .querySelectorAll(".category-btn")
+    .forEach(b => b.classList.remove("active"));
+
+  const first = document.querySelector(".category-btn");
+  if (first) first.classList.add("active");
+
+  filterVideos();
+});
+
+loadMoreBtn?.addEventListener("click", () => {
+  visibleCount += 12;
+  filterVideos();
+});
 
 async function loadVideos() {
-  const q = query(
-    collection(db, "videos"),
-    orderBy("createdAt", "desc")
-  );
+  try {
+    const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
+    const snap = await getDocs(q);
 
-  const snap = await getDocs(q);
+    allVideos = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
 
-  allVideos = snap.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  }));
+    buildTags();
+    filterVideos();
+  } catch (e) {
+    console.error(e);
 
-  buildTags();
-
-  filterVideos();
+    if (grid) {
+      grid.innerHTML = `<div class="empty-state"><h3>Ошибка Firebase</h3><p>${e.message}</p></div>`;
+    }
+  }
 }
-
-searchInput?.addEventListener("input", filterVideos);
 
 loadVideos();
-window.enterSite = function () {
-  const ageGate = document.getElementById("ageGate");
-
-  if (ageGate) {
-    ageGate.style.display = "none";
-  }
-
-  localStorage.setItem("age_ok", "yes");
-};
-
-if (localStorage.getItem("age_ok") === "yes") {
-  const ageGate = document.getElementById("ageGate");
-
-  if (ageGate) {
-    ageGate.style.display = "none";
-  }
-}
