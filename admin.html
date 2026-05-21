@@ -219,19 +219,52 @@ function saveSeenLink(url) {
   localStorage.setItem("sex_campos_seen_links", JSON.stringify(list.slice(0, 500)));
 }
 
-function checkSeen(input) {
-  const url = input.value.trim();
-  const seen = getSeenLinks();
-  const exists = seen.includes(url) || firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
+function normalizeUrl(url) {
+  return String(url || "").trim().replace(/\/+$/, "").toLowerCase();
+}
 
-  if (url && exists) {
-    input.classList.add("seen-link");
-    warning.textContent = "⚠️ Эта ссылка уже встречалась / была добавлена";
+function isDuplicateLink(url, ignoreId = null) {
+  const clean = normalizeUrl(url);
+  if (!clean) return false;
+
+  const seen = getSeenLinks().map(normalizeUrl);
+  if (seen.includes(clean)) return true;
+
+  return firebaseVideos.some(v => {
+    if (ignoreId && v.id === ignoreId) return false;
+    return (
+      normalizeUrl(v.video) === clean ||
+      normalizeUrl(v.sourceUrl) === clean ||
+      normalizeUrl(v.image) === clean
+    );
+  });
+}
+
+function updateDuplicateState() {
+  const inputs = [sourceUrl, videoInput, imageInput];
+  let hasDuplicate = false;
+
+  inputs.forEach(input => {
+    if (input.value.trim() && isDuplicateLink(input.value, editingId)) {
+      input.classList.add("seen-link");
+      hasDuplicate = true;
+    } else {
+      input.classList.remove("seen-link");
+    }
+  });
+
+  if (hasDuplicate) {
+    warning.textContent = "⚠️ Такая ссылка уже была добавлена. Повтор сохранить нельзя.";
     warning.classList.add("show");
   } else {
-    input.classList.remove("seen-link");
     warning.classList.remove("show");
   }
+
+  return hasDuplicate;
+}
+
+function checkSeen(input) {
+  updateDuplicateState();
 }
 
 [sourceUrl, videoInput, imageInput].forEach(input => {
@@ -362,7 +395,16 @@ function getItem() {
 async function saveVideo() {
   try {
     const item = getItem();
-    if (!item.video) return alert("Вставь MP4 ссылку");
+
+    if (!item.video) {
+      alert("Вставь MP4 ссылку");
+      return;
+    }
+
+    if (updateDuplicateState()) {
+      alert("Этот ролик уже добавлялся. Проверь красные поля.");
+      return;
+    }
 
     saveBtn.disabled = true;
     saveBtn.textContent = editingId ? "Сохраняю..." : "Добавляю...";
@@ -427,6 +469,7 @@ window.editVideo = function(id) {
   premiumInput.checked = Boolean(v.premium);
 
   renderPreview();
+  updateDuplicateState();
   window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
@@ -453,6 +496,7 @@ async function loadVideos() {
     firebaseVideos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
     renderAdmin();
+    updateDuplicateState();
   } catch (error) {
     showError(error);
   }

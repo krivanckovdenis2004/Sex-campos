@@ -208,8 +208,10 @@ function filterVideos() {
     list = list.filter(v => v.premium);
     if (pageTitle) pageTitle.textContent = "Премиум";
   } else {
-    if (pageTitle) pageTitle.textContent = "Релевантные видео";
-  }
+  list.sort(() => Math.random() - 0.5);
+
+  if (pageTitle) pageTitle.textContent = "Релевантные видео";
+}
 
   renderVideos(list);
 }
