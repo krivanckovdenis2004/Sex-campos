@@ -51,7 +51,7 @@ body.admin-body{background:#000;color:#fff;font-family:Arial,Helvetica,sans-seri
 const password = "12345";
 const userPass = prompt("Введите пароль");
 if (userPass !== password) {
-  document.body.innerHTML = `<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>`;
+  document.body.innerHTML = '<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>';
 }
 </script>
 
@@ -65,28 +65,55 @@ if (userPass !== password) {
 <section class="admin-panel">
   <h1>Быстрое добавление</h1>
   <p>Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги и категория подберутся сами.</p>
+
   <label>Ссылка на ролик / скачивание / MP4</label>
   <input id="sourceUrl" class="admin-input" placeholder="https://site.com/video-name">
+
   <div class="admin-actions">
     <button type="button" id="smartFillBtn">⚡ Автозаполнить</button>
     <button type="button" id="randomTagsBtn">🎲 Рандом теги</button>
   </div>
+
   <div class="quick-tags" id="quickTags"></div>
   <div id="linkWarning" class="link-warning"></div>
 </section>
 
 <section class="admin-panel">
   <h2 id="formTitle">Добавить ролик</h2>
-  <label>MP4 ссылка</label><input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
-  <label>Превью</label><input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
-  <div class="admin-preview"><video id="previewVideo" controls playsinline></video><img id="previewImage" alt="preview"></div>
-  <label>Название</label><input id="title" class="admin-input" placeholder="Название видео">
-  <label>Модели</label><input id="models" class="admin-input" placeholder="Kiss Cat, Shalina Devine">
-  <label>Категория</label><select id="category" class="admin-input"></select>
-  <label>Просмотры</label><input id="views" class="admin-input" placeholder="0">
-  <label>Теги</label><textarea id="tags" class="admin-input admin-textarea" placeholder="заполняются автоматически"></textarea>
-  <label>Длительность</label><input id="duration" class="admin-input" placeholder="12:45">
-  <label class="admin-check"><input id="premium" type="checkbox"> Premium</label>
+
+  <label>MP4 ссылка</label>
+  <input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
+
+  <label>Превью</label>
+  <input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
+
+  <div class="admin-preview">
+    <video id="previewVideo" controls playsinline></video>
+    <img id="previewImage" alt="preview">
+  </div>
+
+  <label>Название</label>
+  <input id="title" class="admin-input" placeholder="Название видео">
+
+  <label>Модели</label>
+  <input id="models" class="admin-input" placeholder="Kiss Cat, Shalina Devine">
+
+  <label>Категория</label>
+  <select id="category" class="admin-input"></select>
+
+  <label>Просмотры</label>
+  <input id="views" class="admin-input" placeholder="0">
+
+  <label>Теги</label>
+  <textarea id="tags" class="admin-input admin-textarea" placeholder="заполняются автоматически"></textarea>
+
+  <label>Длительность</label>
+  <input id="duration" class="admin-input" placeholder="12:45">
+
+  <label class="admin-check">
+    <input id="premium" type="checkbox"> Premium
+  </label>
+
   <button id="saveBtn" class="admin-save" type="button">Добавить в Firebase</button>
   <button id="cancelEditBtn" class="admin-secondary" type="button" style="display:none">Отменить редактирование</button>
 </section>
@@ -116,8 +143,27 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const categories = ["русское","женский куколдинг","грязные разговоры","с разговорами","свингеры","измена","красивое","соблазнение парня","соблазнение девушки","pov","непостановочное","спящие","крупным планом","чулки","мжм","жмж","бдсм","сексвайф","в поезде","в тренде","новые"];
-const defaultTags = ["русское","грязные разговоры","с разговорами","спящие","измена","pov","непостановочное","красивое","соблазнение девушки","мастурбируют девушке","дрочат парню","красивый минет","куни","минет","муж и жена","пара","красивое белье","высокие девушки","загорелые","худенькие","в халате","в пеньюаре","смуглые","упругие сиськи","большие сиськи","красивые сиськи","с тату","интимные стрижки","силиконовая грудь","красивые киски","большие члены","красивые члены","домашнее","в спальне","на диване","кончают внутрь","оргазм","блондинки","русые","шатенки","мамочка","милашки","горячие","взаимная мастурбация","ножки","одновременный оргазм"];
+const categories = [
+  "русское","женский куколдинг","грязные разговоры","с разговорами",
+  "свингеры","измена","красивое","соблазнение парня",
+  "соблазнение девушки","pov","непостановочное","спящие",
+  "крупным планом","чулки","мжм","жмж","бдсм","сексвайф",
+  "в поезде","в тренде","новые"
+];
+
+const defaultTags = [
+  "русское","грязные разговоры","с разговорами","спящие","измена",
+  "pov","непостановочное","красивое","соблазнение девушки",
+  "мастурбируют девушке","дрочат парню","красивый минет","куни",
+  "минет","муж и жена","пара","красивое белье","высокие девушки",
+  "загорелые","худенькие","в халате","в пеньюаре","смуглые",
+  "упругие сиськи","большие сиськи","красивые сиськи","с тату",
+  "интимные стрижки","силиконовая грудь","красивые киски",
+  "большие члены","красивые члены","домашнее","в спальне",
+  "на диване","кончают внутрь","оргазм","блондинки","русые",
+  "шатенки","мамочка","милашки","горячие","взаимная мастурбация",
+  "ножки","одновременный оргазм"
+];
 
 let firebaseVideos = [];
 let editingId = null;
@@ -141,25 +187,29 @@ const adminStats = document.getElementById("adminStats");
 const adminGrid = document.getElementById("adminGrid");
 const quickTags = document.getElementById("quickTags");
 
-categoryInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
-quickTags.innerHTML = defaultTags.slice(0, 24).map(tag => `<button type="button" data-tag="${tag}">+ ${tag}</button>`).join("");
+categoryInput.innerHTML = categories.map(c => '<option value="' + c + '">' + c + '</option>').join("");
+quickTags.innerHTML = defaultTags.slice(0, 24).map(tag => '<button type="button" data-tag="' + tag + '">+ ' + tag + '</button>').join("");
 
 quickTags.addEventListener("click", event => {
   const tag = event.target.dataset.tag;
   if (tag) addTag(tag);
 });
+
 document.getElementById("smartFillBtn").addEventListener("click", smartFill);
 document.getElementById("randomTagsBtn").addEventListener("click", randomTags);
 saveBtn.addEventListener("click", saveVideo);
 cancelEditBtn.addEventListener("click", resetForm);
 
 function showError(error) {
-  adminStats.innerHTML = `<div class="admin-error">Ошибка Firebase:\\n${error.message || error}</div>`;
+  adminStats.innerHTML = '<div class="admin-error">Ошибка Firebase:\n' + (error.message || error) + '</div>';
 }
 
 function getSeenLinks() {
-  try { return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]"); }
-  catch(e) { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]");
+  } catch(e) {
+    return [];
+  }
 }
 
 function saveSeenLink(url) {
@@ -173,6 +223,7 @@ function checkSeen(input) {
   const url = input.value.trim();
   const seen = getSeenLinks();
   const exists = seen.includes(url) || firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
+
   if (url && exists) {
     input.classList.add("seen-link");
     warning.textContent = "⚠️ Эта ссылка уже встречалась / была добавлена";
@@ -198,13 +249,13 @@ function addTag(tag) {
 
 function cleanFromUrl(url) {
   return decodeURIComponent(String(url || ""))
-    .replace(/^https?:\\/\\//, "")
+    .replace(/^https?:\/\//, "")
     .replace(/[?#].*$/, "")
-    .replace(/\\.[a-z0-9]{2,5}$/i, "")
-    .replace(/[\\/_\\-.+]+/g, " ")
-    .replace(/\\b[a-zA-Z0-9]{16,}\\b/g, "")
-    .replace(/sex\\s*studentki|live|link|download|video|mp4/gi, "")
-    .replace(/\\s+/g, " ")
+    .replace(/\.[a-z0-9]{2,5}$/i, "")
+    .replace(/[\/_\-.+]+/g, " ")
+    .replace(/\b[a-zA-Z0-9]{16,}\b/g, "")
+    .replace(/sex\s*studentki|live|link|download|video|mp4/gi, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
@@ -221,22 +272,31 @@ function guessCategory(text) {
 function tagsFromText(text) {
   const t = text.toLowerCase();
   const found = [];
+
   defaultTags.forEach(tag => {
     if (t.includes(tag.toLowerCase()) && !found.includes(tag)) found.push(tag);
   });
+
   while (found.length < 12) {
     const random = defaultTags[Math.floor(Math.random() * defaultTags.length)];
     if (!found.includes(random)) found.push(random);
   }
+
   return found.slice(0, 18);
 }
 
 function guessPreview(url) {
   const clean = String(url || "").split("?")[0];
-  if (/\\.(jpg|jpeg|png|webp)$/i.test(clean)) return url;
-  if (/\\.(mp4|webm)$/i.test(clean)) {
-    return clean.replace(/\\.(mp4|webm)$/i, ".jpg").replace("/videos/", "/thumbs/").replace("/video/", "/thumbs/");
+
+  if (/\.(jpg|jpeg|png|webp)$/i.test(clean)) return url;
+
+  if (/\.(mp4|webm)$/i.test(clean)) {
+    return clean
+      .replace(/\.(mp4|webm)$/i, ".jpg")
+      .replace("/videos/", "/thumbs/")
+      .replace("/video/", "/thumbs/");
   }
+
   return "";
 }
 
@@ -252,7 +312,9 @@ function smartFill() {
   categoryInput.value = category;
   tagsInput.value = tags.join(", ");
 
-  if (/\\.(mp4|webm|m3u8)(\\?|#|$)/i.test(url)) videoInput.value = url;
+  if (/\.(mp4|webm|m3u8)(\?|#|$)/i.test(url)) {
+    videoInput.value = url;
+  }
 
   const preview = guessPreview(url);
   if (preview && !imageInput.value) imageInput.value = preview;
@@ -337,6 +399,7 @@ function resetForm() {
     i.value = "";
     i.classList.remove("seen-link");
   });
+
   premiumInput.checked = false;
   warning.classList.remove("show");
   previewVideo.removeAttribute("src");
@@ -396,10 +459,10 @@ async function loadVideos() {
 }
 
 function renderAdmin() {
-  adminStats.textContent = `Всего видео: ${firebaseVideos.length}`;
+  adminStats.textContent = "Всего видео: " + firebaseVideos.length;
 
   if (!firebaseVideos.length) {
-    adminGrid.innerHTML = `<div class="admin-video-card"><b>Видео пока нет</b><span>Добавь первый ролик выше.</span></div>`;
+    adminGrid.innerHTML = '<div class="admin-video-card"><b>Видео пока нет</b><span>Добавь первый ролик выше.</span></div>';
     return;
   }
 
