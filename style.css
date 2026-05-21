@@ -77,5 +77,4 @@ main{padding:12px 12px 76px;max-width:680px;margin:0 auto}
 .admin-video-card span{font-size:12px;color:#aaa}
 .admin-video-card button{grid-column:1/-1;border:0;border-radius:10px;padding:10px;background:#222;color:#fff;font-weight:800}
 .admin-video-card button.danger{background:#35111b;color:#fff}
-
 @media(min-width:720px){.grid{grid-template-columns:repeat(2,1fr)}}

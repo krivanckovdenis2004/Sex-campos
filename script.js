@@ -44,24 +44,15 @@ menuBtn?.addEventListener("click", window.toggleTagMenu);
 
 function normalizeTags(tags) {
   if (!tags) return [];
-
-  if (Array.isArray(tags)) {
-    return tags.map(t => String(t).trim()).filter(Boolean);
-  }
-
-  return String(tags)
-    .split(",")
-    .map(t => t.trim())
-    .filter(Boolean);
+  if (Array.isArray(tags)) return tags.map(t => String(t).trim()).filter(Boolean);
+  return String(tags).split(",").map(t => t.trim()).filter(Boolean);
 }
 
 function viewsNumber(value) {
   const n = parseFloat(String(value || "0").replace(",", ".")) || 0;
   const t = String(value || "").toLowerCase();
-
   if (t.includes("m")) return n * 1000000;
   if (t.includes("k")) return n * 1000;
-
   return n;
 }
 
@@ -71,7 +62,6 @@ function randomWatching(id) {
 
 function createCard(v) {
   const a = document.createElement("a");
-
   a.href = `video.html?id=${v.id}`;
   a.className = "card video-card";
 
@@ -97,20 +87,16 @@ function createCard(v) {
 
   function preview() {
     if (!video || !v.video) return;
-
     img.style.opacity = ".2";
     video.style.opacity = "1";
-
     try {
       video.currentTime = Math.min(2 + Math.random() * 8, 10);
     } catch (e) {}
-
     video.play().catch(() => {});
   }
 
   function stop() {
     if (!video) return;
-
     video.pause();
     video.style.opacity = "0";
     img.style.opacity = "1";
@@ -128,12 +114,9 @@ function renderVideos(list) {
   if (!grid) return;
 
   const visible = list.slice(0, visibleCount);
-
   grid.innerHTML = "";
 
-  if (videoCount) {
-    videoCount.textContent = `${list.length} видео`;
-  }
+  if (videoCount) videoCount.textContent = `${list.length} видео`;
 
   if (!visible.length) {
     grid.innerHTML = `<div class="empty-state"><h3>Пока нет видео</h3><p>Добавь ролики через Admin.</p></div>`;
@@ -143,9 +126,7 @@ function renderVideos(list) {
 
   visible.forEach(v => grid.appendChild(createCard(v)));
 
-  if (loadMoreBtn) {
-    loadMoreBtn.style.display = visible.length < list.length ? "block" : "none";
-  }
+  if (loadMoreBtn) loadMoreBtn.style.display = visible.length < list.length ? "block" : "none";
 }
 
 function buildTags() {
@@ -155,12 +136,8 @@ function buildTags() {
 
   allVideos.forEach(v => {
     normalizeTags(v.tags).forEach(t => tags.add(t));
-
     if (v.category) tags.add(v.category);
-
-    if (Array.isArray(v.models)) {
-      v.models.forEach(m => tags.add(m));
-    }
+    if (Array.isArray(v.models)) v.models.forEach(m => tags.add(m));
   });
 
   categoryList.innerHTML = "";
@@ -172,34 +149,25 @@ function buildTags() {
   allBtn.onclick = () => selectTag("all", allBtn);
   categoryList.appendChild(allBtn);
 
-  [...tags]
-    .filter(Boolean)
-    .slice(0, 120)
-    .forEach(tag => {
-      const btn = document.createElement("button");
-      btn.className = "category-btn";
-      btn.type = "button";
-      btn.textContent = `+ ${tag}`;
-
-      btn.onclick = () => selectTag(tag, btn);
-
-      categoryList.appendChild(btn);
-    });
+  [...tags].filter(Boolean).slice(0, 120).forEach(tag => {
+    const btn = document.createElement("button");
+    btn.className = "category-btn";
+    btn.type = "button";
+    btn.textContent = `+ ${tag}`;
+    btn.onclick = () => selectTag(tag, btn);
+    categoryList.appendChild(btn);
+  });
 }
 
 function selectTag(tag, btn) {
   currentTag = tag;
   visibleCount = 12;
 
-  document
-    .querySelectorAll(".category-btn")
-    .forEach(b => b.classList.remove("active"));
-
+  document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
   btn.classList.add("active");
 
-  if (tag !== "all" && searchInput) {
-    searchInput.value = tag;
-  }
+  if (tag !== "all" && searchInput) searchInput.value = tag;
+  if (tag === "all" && searchInput) searchInput.value = "";
 
   filterVideos();
 }
@@ -213,7 +181,6 @@ function filterVideos() {
     list = list.filter(v => {
       const tags = normalizeTags(v.tags).join(" ").toLowerCase();
       const models = Array.isArray(v.models) ? v.models.join(" ").toLowerCase() : "";
-
       return (
         String(v.title || "").toLowerCase().includes(s) ||
         String(v.category || "").toLowerCase().includes(s) ||
@@ -256,14 +223,9 @@ window.setSort = function (type) {
 searchInput?.addEventListener("input", () => {
   currentTag = "all";
   visibleCount = 12;
-
-  document
-    .querySelectorAll(".category-btn")
-    .forEach(b => b.classList.remove("active"));
-
+  document.querySelectorAll(".category-btn").forEach(b => b.classList.remove("active"));
   const first = document.querySelector(".category-btn");
   if (first) first.classList.add("active");
-
   filterVideos();
 });
 
@@ -276,20 +238,12 @@ async function loadVideos() {
   try {
     const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
     const snap = await getDocs(q);
-
-    allVideos = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
-
+    allVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     buildTags();
     filterVideos();
   } catch (e) {
     console.error(e);
-
-    if (grid) {
-      grid.innerHTML = `<div class="empty-state"><h3>Ошибка Firebase</h3><p>${e.message}</p></div>`;
-    }
+    if (grid) grid.innerHTML = `<div class="empty-state"><h3>Ошибка Firebase</h3><p>${e.message}</p></div>`;
   }
 }
 
