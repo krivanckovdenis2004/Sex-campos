@@ -5,7 +5,198 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | SEX-campos</title>
 <link rel="stylesheet" href="style.css">
+
+<style>
+.admin-body{
+  background:#000;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  margin:0;
+  padding-bottom:80px;
+}
+.admin-header{
+  background:#050505;
+  border-bottom:1px solid #242633;
+  padding:14px;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.admin-header a{
+  color:#b065ff;
+  font-size:16px;
+}
+.admin-logo{
+  font-size:30px;
+  font-weight:950;
+  margin-top:8px;
+}
+.logo-sex{color:#e73762}
+.logo-dash,.logo-campos{color:#fff}
+.admin-main{
+  padding:14px;
+  max-width:760px;
+  margin:0 auto;
+}
+.admin-panel{
+  background:#09090b;
+  border:1px solid #242633;
+  border-radius:18px;
+  padding:14px;
+  margin-bottom:14px;
+}
+.admin-panel h1,
+.admin-panel h2{
+  margin:0 0 12px;
+  font-size:28px;
+}
+.admin-panel p{
+  color:#cfcfd6;
+  line-height:1.45;
+}
+.admin-panel label{
+  display:block;
+  font-weight:800;
+  margin:12px 0 7px;
+}
+.admin-input{
+  width:100%;
+  background:#14141a;
+  border:1px solid #343642;
+  color:#fff;
+  border-radius:13px;
+  padding:13px;
+  font-size:16px;
+}
+.admin-textarea{
+  min-height:92px;
+}
+.admin-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.admin-actions button,
+.admin-save,
+.admin-secondary{
+  border:0;
+  border-radius:14px;
+  padding:14px;
+  font-weight:900;
+  color:#fff;
+  background:#e73762;
+  width:100%;
+  margin-top:10px;
+}
+.admin-secondary{
+  background:#252631;
+}
+.admin-preview{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:12px 0;
+}
+.admin-preview video,
+.admin-preview img{
+  width:100%;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  background:#111;
+  border:1px solid #333;
+  border-radius:12px;
+}
+.admin-check{
+  display:flex!important;
+  align-items:center;
+  gap:9px;
+}
+.admin-check input{
+  width:22px;
+  height:22px;
+}
+.link-warning{
+  display:none;
+  background:#3a0712;
+  border:1px solid #e73762;
+  border-radius:12px;
+  padding:10px;
+  margin-top:10px;
+  color:#fff;
+}
+.link-warning.show{display:block}
+.seen-link{
+  border-color:#e73762!important;
+  background:#300711!important;
+}
+.admin-stats{
+  color:#aaa;
+  margin-bottom:10px;
+}
+.admin-grid{
+  display:grid;
+  gap:12px;
+}
+.admin-video-card{
+  background:#111;
+  border:1px solid #2b2d38;
+  border-radius:15px;
+  padding:10px;
+}
+.admin-video-row{
+  display:grid;
+  grid-template-columns:96px 1fr;
+  gap:10px;
+  align-items:center;
+}
+.admin-video-card img{
+  width:96px;
+  aspect-ratio:16/9;
+  object-fit:cover;
+  border-radius:10px;
+  background:#222;
+}
+.admin-video-card b{
+  display:block;
+  font-size:15px;
+  line-height:1.2;
+}
+.admin-video-card span{
+  display:block;
+  color:#aaa;
+  font-size:12px;
+  margin-top:4px;
+}
+.admin-video-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:10px;
+}
+.admin-video-buttons button{
+  border:0;
+  border-radius:11px;
+  padding:11px;
+  color:#fff;
+  background:#22242d;
+  font-weight:800;
+}
+.admin-video-buttons button.danger{
+  background:#35111b;
+}
+.admin-error{
+  background:#331018;
+  border:1px solid #e73762;
+  color:#fff;
+  padding:12px;
+  border-radius:14px;
+  margin-top:10px;
+  white-space:pre-wrap;
+}
+</style>
 </head>
+
 <body class="admin-body">
 
 <script>
@@ -23,14 +214,16 @@ if (userPass !== password) {
 
 <header class="admin-header">
   <a href="index.html">← На сайт</a>
-  <div class="admin-logo"><span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span> Admin</div>
+  <div class="admin-logo">
+    <span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span> Admin
+  </div>
 </header>
 
 <main class="admin-main">
 
 <section class="admin-panel">
   <h1>Быстрое добавление</h1>
-  <p>Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги, категория и разделы подбираются сами.</p>
+  <p>Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги и категория подберутся сами.</p>
 
   <label>Ссылка на ролик / скачивание / MP4</label>
   <input id="sourceUrl" class="admin-input" placeholder="https://site.com/video-name">
@@ -99,8 +292,6 @@ import {
   getDocs,
   deleteDoc,
   doc,
-  query,
-  orderBy,
   serverTimestamp,
   updateDoc
 } from "./firebase.js";
@@ -145,25 +336,39 @@ const cancelEditBtn = document.getElementById("cancelEditBtn");
 const previewVideo = document.getElementById("previewVideo");
 const previewImage = document.getElementById("previewImage");
 const warning = document.getElementById("linkWarning");
+const adminStats = document.getElementById("adminStats");
+const adminGrid = document.getElementById("adminGrid");
 
 categoryInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
 
+function showError(error) {
+  adminStats.innerHTML = `<div class="admin-error">Ошибка Firebase:\\n${error.message || error}</div>`;
+}
+
 function getSeenLinks() {
-  try { return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]"); }
-  catch(e) { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]");
+  } catch(e) {
+    return [];
+  }
 }
 
 function saveSeenLink(url) {
   if (!url) return;
+
   const list = getSeenLinks().filter(x => x !== url);
   list.unshift(url);
+
   localStorage.setItem("sex_campos_seen_links", JSON.stringify(list.slice(0, 500)));
 }
 
 function checkSeen(input) {
   const url = input.value.trim();
   const seen = getSeenLinks();
-  const exists = seen.includes(url) || firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
+
+  const exists =
+    seen.includes(url) ||
+    firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
 
   if (url && exists) {
     input.classList.add("seen-link");
@@ -196,22 +401,29 @@ function cleanFromUrl(url) {
 
 function guessCategory(text) {
   const t = text.toLowerCase();
+
   if (t.includes("pov")) return "pov";
   if (t.includes("измен") || t.includes("cheat")) return "измена";
   if (t.includes("разговор") || t.includes("talk")) return "с разговорами";
   if (t.includes("куколд") || t.includes("cuckold")) return "женский куколдинг";
   if (t.includes("bdsm") || t.includes("бдсм")) return "бдсм";
+
   return categories[Math.floor(Math.random() * Math.min(categories.length, 12))];
 }
 
 function tagsFromText(text) {
   const t = text.toLowerCase();
   const found = defaultTags.filter(tag => t.includes(tag.toLowerCase()));
-  while (found.length < 10) {
+
+  while (found.length < 12) {
     const random = defaultTags[Math.floor(Math.random() * defaultTags.length)];
-    if (!found.includes(random)) found.push(random);
+
+    if (!found.includes(random)) {
+      found.push(random);
+    }
   }
-  return found.slice(0, 16);
+
+  return found.slice(0, 18);
 }
 
 function guessPreview(url) {
@@ -231,7 +443,11 @@ function guessPreview(url) {
 
 window.smartFill = function () {
   const url = sourceUrl.value.trim();
-  if (!url) return alert("Вставь ссылку");
+
+  if (!url) {
+    alert("Вставь ссылку");
+    return;
+  }
 
   const text = cleanFromUrl(url);
   const title = text || "Новое видео";
@@ -247,11 +463,14 @@ window.smartFill = function () {
   }
 
   const preview = guessPreview(url);
+
   if (preview && !imageInput.value) {
     imageInput.value = preview;
   }
 
-  if (!viewsInput.value) viewsInput.value = Math.floor(Math.random() * 900000) + 10000;
+  if (!viewsInput.value) {
+    viewsInput.value = Math.floor(Math.random() * 900000) + 10000;
+  }
 
   renderPreview();
   checkSeen(sourceUrl);
@@ -259,22 +478,40 @@ window.smartFill = function () {
 
 window.randomTags = function () {
   const tags = [];
+
   while (tags.length < 14) {
     const t = defaultTags[Math.floor(Math.random() * defaultTags.length)];
-    if (!tags.includes(t)) tags.push(t);
+
+    if (!tags.includes(t)) {
+      tags.push(t);
+    }
   }
+
   tagsInput.value = tags.join(", ");
   categoryInput.value = tags[0] || "русское";
 };
 
 function renderPreview() {
-  if (videoInput.value) previewVideo.src = videoInput.value;
-  if (imageInput.value) previewImage.src = imageInput.value;
+  if (videoInput.value) {
+    previewVideo.src = videoInput.value;
+  }
+
+  if (imageInput.value) {
+    previewImage.src = imageInput.value;
+  }
 }
 
 function getItem() {
-  const models = modelsInput.value.split(",").map(x => x.trim()).filter(Boolean);
-  const tags = tagsInput.value.split(",").map(x => x.trim()).filter(Boolean);
+  const models = modelsInput.value
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  const tags = tagsInput.value
+    .split(",")
+    .map(x => x.trim())
+    .filter(Boolean);
+
   return {
     title: titleInput.value || "Без названия",
     sourceUrl: sourceUrl.value.trim(),
@@ -291,22 +528,39 @@ function getItem() {
 }
 
 async function saveVideo() {
-  const item = getItem();
-  if (!item.video) return alert("Вставь MP4 ссылку");
+  try {
+    const item = getItem();
 
-  if (editingId) {
-    await updateDoc(doc(db, "videos", editingId), item);
-    alert("Ролик обновлён");
-  } else {
-    item.createdAt = Date.now();
-    item.createdAtServer = serverTimestamp();
-    await addDoc(collection(db, "videos"), item);
-    alert("Ролик добавлен");
+    if (!item.video) {
+      alert("Вставь MP4 ссылку");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = editingId ? "Сохраняю..." : "Добавляю...";
+
+    if (editingId) {
+      await updateDoc(doc(db, "videos", editingId), item);
+      alert("Ролик обновлён");
+    } else {
+      item.createdAt = Date.now();
+      item.createdAtServer = serverTimestamp();
+
+      await addDoc(collection(db, "videos"), item);
+      alert("Ролик добавлен");
+    }
+
+    [item.sourceUrl, item.video, item.image].forEach(saveSeenLink);
+
+    resetForm();
+    await loadVideos();
+  } catch (error) {
+    alert("Ошибка: " + error.message);
+    showError(error);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = editingId ? "Сохранить изменения" : "Добавить в Firebase";
   }
-
-  [item.sourceUrl, item.video, item.image].forEach(saveSeenLink);
-  resetForm();
-  await loadVideos();
 }
 
 saveBtn.addEventListener("click", saveVideo);
@@ -314,20 +568,30 @@ cancelEditBtn.addEventListener("click", () => resetForm());
 
 function resetForm() {
   editingId = null;
+
   saveBtn.textContent = "Добавить в Firebase";
   cancelEditBtn.style.display = "none";
   document.getElementById("formTitle").textContent = "Добавить ролик";
-  [sourceUrl, videoInput, imageInput, titleInput, modelsInput, viewsInput, tagsInput, durationInput].forEach(i => i.value = "");
+
+  [sourceUrl, videoInput, imageInput, titleInput, modelsInput, viewsInput, tagsInput, durationInput]
+    .forEach(i => {
+      i.value = "";
+      i.classList.remove("seen-link");
+    });
+
   premiumInput.checked = false;
+  warning.classList.remove("show");
   previewVideo.removeAttribute("src");
   previewImage.removeAttribute("src");
 }
 
 window.editVideo = function(id) {
   const v = firebaseVideos.find(x => x.id === id);
+
   if (!v) return;
 
   editingId = id;
+
   document.getElementById("formTitle").textContent = "Редактировать ролик";
   saveBtn.textContent = "Сохранить изменения";
   cancelEditBtn.style.display = "block";
@@ -341,36 +605,79 @@ window.editVideo = function(id) {
   viewsInput.value = v.views || "";
   tagsInput.value = Array.isArray(v.tags) ? v.tags.join(", ") : "";
   durationInput.value = v.duration || "";
-  premiumInput.checked = !!v.premium;
+  premiumInput.checked = Boolean(v.premium);
 
   renderPreview();
-  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
 };
 
 window.deleteVideo = async function(id) {
-  if (!confirm("Удалить ролик?")) return;
-  await deleteDoc(doc(db, "videos", id));
-  await loadVideos();
+  try {
+    if (!confirm("Удалить ролик?")) return;
+
+    await deleteDoc(doc(db, "videos", id));
+
+    await loadVideos();
+
+    alert("Ролик удалён");
+  } catch (error) {
+    alert("Ошибка удаления: " + error.message);
+    showError(error);
+  }
 };
 
 async function loadVideos() {
-  const q = query(collection(db, "videos"), orderBy("createdAt", "desc"));
-  const snap = await getDocs(q);
-  firebaseVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  renderAdmin();
+  try {
+    adminStats.textContent = "загрузка...";
+    adminGrid.innerHTML = "";
+
+    const snap = await getDocs(collection(db, "videos"));
+
+    firebaseVideos = snap.docs.map(d => ({
+      id: d.id,
+      ...d.data()
+    }));
+
+    firebaseVideos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+    renderAdmin();
+  } catch (error) {
+    showError(error);
+  }
 }
 
 function renderAdmin() {
-  document.getElementById("adminStats").textContent = `Всего видео: ${firebaseVideos.length}`;
-  document.getElementById("adminGrid").innerHTML = firebaseVideos.slice(0, 30).map(v => `
-    <div class="admin-video-card">
-      <img src="${v.image || "preview.jpg"}">
-      <div>
-        <b>${v.title || "Без названия"}</b>
-        <span>${v.category || "новое"}</span>
+  adminStats.textContent = `Всего видео: ${firebaseVideos.length}`;
+
+  if (!firebaseVideos.length) {
+    adminGrid.innerHTML = `
+      <div class="admin-video-card">
+        <b>Видео пока нет</b>
+        <span>Добавь первый ролик выше.</span>
       </div>
-      <button onclick="editVideo('${v.id}')">Редактировать</button>
-      <button class="danger" onclick="deleteVideo('${v.id}')">Удалить</button>
+    `;
+    return;
+  }
+
+  adminGrid.innerHTML = firebaseVideos.map(v => `
+    <div class="admin-video-card">
+      <div class="admin-video-row">
+        <img src="${v.image || "preview.jpg"}" loading="lazy">
+        <div>
+          <b>${v.title || "Без названия"}</b>
+          <span>${v.category || "новое"}</span>
+          <span>${v.video ? "MP4 есть" : "MP4 нет"}</span>
+        </div>
+      </div>
+
+      <div class="admin-video-buttons">
+        <button type="button" onclick="editVideo('${v.id}')">Редактировать</button>
+        <button type="button" class="danger" onclick="deleteVideo('${v.id}')">Удалить</button>
+      </div>
     </div>
   `).join("");
 }
