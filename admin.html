@@ -84,8 +84,11 @@ if (userPass !== password) {
   <label>MP4 ссылка</label>
   <input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
 
-  <label>Превью</label>
+  <label>Превью по ссылке</label>
   <input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
+
+  <label>Или превью с телефона</label>
+  <input id="imageFile" class="admin-input" type="file" accept="image/*">
 
   <div class="admin-preview">
     <video id="previewVideo" controls playsinline></video>
@@ -171,6 +174,7 @@ let editingId = null;
 const sourceUrl = document.getElementById("sourceUrl");
 const videoInput = document.getElementById("video");
 const imageInput = document.getElementById("image");
+const imageFileInput = document.getElementById("imageFile");
 const titleInput = document.getElementById("title");
 const modelsInput = document.getElementById("models");
 const categoryInput = document.getElementById("category");
@@ -274,6 +278,53 @@ function checkSeen(input) {
   });
 });
 
+function resizeImageFile(file, maxWidth = 900, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = event => {
+      const img = new Image();
+
+      img.onload = () => {
+        const scale = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement("canvas");
+
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+
+      img.onerror = reject;
+      img.src = event.target.result;
+    };
+
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+imageFileInput?.addEventListener("change", async () => {
+  const file = imageFileInput.files[0];
+
+  if (!file) return;
+
+  try {
+    imageInput.value = "Загружено с телефона";
+    previewImage.src = URL.createObjectURL(file);
+
+    const compressed = await resizeImageFile(file);
+
+    imageInput.dataset.localImage = compressed;
+    previewImage.src = compressed;
+  } catch (error) {
+    alert("Не удалось загрузить превью: " + error.message);
+  }
+});
+
 function addTag(tag) {
   const current = tagsInput.value.split(",").map(t => t.trim()).filter(Boolean);
   if (!current.includes(tag)) current.push(tag);
@@ -370,7 +421,12 @@ function randomTags() {
 
 function renderPreview() {
   if (videoInput.value) previewVideo.src = videoInput.value;
-  if (imageInput.value) previewImage.src = imageInput.value;
+
+  if (imageInput.dataset.localImage) {
+    previewImage.src = imageInput.dataset.localImage;
+  } else if (imageInput.value && imageInput.value !== "Загружено с телефона") {
+    previewImage.src = imageInput.value;
+  }
 }
 
 function getItem() {
@@ -381,7 +437,7 @@ function getItem() {
     title: titleInput.value || "Без названия",
     sourceUrl: sourceUrl.value.trim(),
     video: videoInput.value.trim(),
-    image: imageInput.value.trim() || "preview.jpg",
+    image: imageInput.dataset.localImage || imageInput.value.trim() || "preview.jpg",
     models,
     category: categoryInput.value || "русское",
     views: viewsInput.value || "0",
@@ -442,6 +498,9 @@ function resetForm() {
     i.classList.remove("seen-link");
   });
 
+  if (imageFileInput) imageFileInput.value = "";
+  delete imageInput.dataset.localImage;
+
   premiumInput.checked = false;
   warning.classList.remove("show");
   previewVideo.removeAttribute("src");
@@ -460,6 +519,8 @@ window.editVideo = function(id) {
   sourceUrl.value = v.sourceUrl || "";
   videoInput.value = v.video || "";
   imageInput.value = v.image || "";
+  delete imageInput.dataset.localImage;
+  if (imageFileInput) imageFileInput.value = "";
   titleInput.value = v.title || "";
   modelsInput.value = Array.isArray(v.models) ? v.models.join(", ") : "";
   categoryInput.value = v.category || "русское";
