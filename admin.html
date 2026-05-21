@@ -4,196 +4,44 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | SEX-campos</title>
-<link rel="stylesheet" href="style.css">
 
 <style>
-.admin-body{
-  background:#000;
-  color:#fff;
-  font-family:Arial,Helvetica,sans-serif;
-  margin:0;
-  padding-bottom:80px;
-}
-.admin-header{
-  background:#050505;
-  border-bottom:1px solid #242633;
-  padding:14px;
-  position:sticky;
-  top:0;
-  z-index:20;
-}
-.admin-header a{
-  color:#b065ff;
-  font-size:16px;
-}
-.admin-logo{
-  font-size:30px;
-  font-weight:950;
-  margin-top:8px;
-}
-.logo-sex{color:#e73762}
-.logo-dash,.logo-campos{color:#fff}
-.admin-main{
-  padding:14px;
-  max-width:760px;
-  margin:0 auto;
-}
-.admin-panel{
-  background:#09090b;
-  border:1px solid #242633;
-  border-radius:18px;
-  padding:14px;
-  margin-bottom:14px;
-}
-.admin-panel h1,
-.admin-panel h2{
-  margin:0 0 12px;
-  font-size:28px;
-}
-.admin-panel p{
-  color:#cfcfd6;
-  line-height:1.45;
-}
-.admin-panel label{
-  display:block;
-  font-weight:800;
-  margin:12px 0 7px;
-}
-.admin-input{
-  width:100%;
-  background:#14141a;
-  border:1px solid #343642;
-  color:#fff;
-  border-radius:13px;
-  padding:13px;
-  font-size:16px;
-}
-.admin-textarea{
-  min-height:92px;
-}
-.admin-actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-top:10px;
-}
-.admin-actions button,
-.admin-save,
-.admin-secondary{
-  border:0;
-  border-radius:14px;
-  padding:14px;
-  font-weight:900;
-  color:#fff;
-  background:#e73762;
-  width:100%;
-  margin-top:10px;
-}
-.admin-secondary{
-  background:#252631;
-}
-.admin-preview{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin:12px 0;
-}
-.admin-preview video,
-.admin-preview img{
-  width:100%;
-  aspect-ratio:16/9;
-  object-fit:cover;
-  background:#111;
-  border:1px solid #333;
-  border-radius:12px;
-}
-.admin-check{
-  display:flex!important;
-  align-items:center;
-  gap:9px;
-}
-.admin-check input{
-  width:22px;
-  height:22px;
-}
-.link-warning{
-  display:none;
-  background:#3a0712;
-  border:1px solid #e73762;
-  border-radius:12px;
-  padding:10px;
-  margin-top:10px;
-  color:#fff;
-}
+*{box-sizing:border-box}
+body.admin-body{background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif;margin:0;padding-bottom:80px}
+.admin-header{background:#050505;border-bottom:1px solid #242633;padding:14px;position:sticky;top:0;z-index:20}
+.admin-header a{color:#b065ff;font-size:16px}
+.admin-logo{font-size:30px;font-weight:950;margin-top:8px}
+.logo-sex{color:#e73762}.logo-dash,.logo-campos{color:#fff}
+.admin-main{padding:14px;max-width:760px;margin:0 auto}
+.admin-panel{background:#09090b;border:1px solid #242633;border-radius:18px;padding:14px;margin-bottom:14px}
+.admin-panel h1,.admin-panel h2{margin:0 0 12px;font-size:28px}
+.admin-panel p{color:#cfcfd6;line-height:1.45}
+.admin-panel label{display:block;font-weight:800;margin:12px 0 7px}
+.admin-input{width:100%;background:#14141a;border:1px solid #343642;color:#fff;border-radius:13px;padding:13px;font-size:16px}
+.admin-textarea{min-height:92px}
+.admin-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.admin-actions button,.admin-save,.admin-secondary{border:0;border-radius:14px;padding:14px;font-weight:900;color:#fff;background:#e73762;width:100%;margin-top:10px}
+.admin-secondary{background:#252631}
+.admin-preview{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.admin-preview video,.admin-preview img{width:100%;aspect-ratio:16/9;object-fit:cover;background:#111;border:1px solid #333;border-radius:12px}
+.admin-check{display:flex!important;align-items:center;gap:9px}
+.admin-check input{width:22px;height:22px}
+.link-warning{display:none;background:#3a0712;border:1px solid #e73762;border-radius:12px;padding:10px;margin-top:10px;color:#fff}
 .link-warning.show{display:block}
-.seen-link{
-  border-color:#e73762!important;
-  background:#300711!important;
-}
-.admin-stats{
-  color:#aaa;
-  margin-bottom:10px;
-}
-.admin-grid{
-  display:grid;
-  gap:12px;
-}
-.admin-video-card{
-  background:#111;
-  border:1px solid #2b2d38;
-  border-radius:15px;
-  padding:10px;
-}
-.admin-video-row{
-  display:grid;
-  grid-template-columns:96px 1fr;
-  gap:10px;
-  align-items:center;
-}
-.admin-video-card img{
-  width:96px;
-  aspect-ratio:16/9;
-  object-fit:cover;
-  border-radius:10px;
-  background:#222;
-}
-.admin-video-card b{
-  display:block;
-  font-size:15px;
-  line-height:1.2;
-}
-.admin-video-card span{
-  display:block;
-  color:#aaa;
-  font-size:12px;
-  margin-top:4px;
-}
-.admin-video-buttons{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:8px;
-  margin-top:10px;
-}
-.admin-video-buttons button{
-  border:0;
-  border-radius:11px;
-  padding:11px;
-  color:#fff;
-  background:#22242d;
-  font-weight:800;
-}
-.admin-video-buttons button.danger{
-  background:#35111b;
-}
-.admin-error{
-  background:#331018;
-  border:1px solid #e73762;
-  color:#fff;
-  padding:12px;
-  border-radius:14px;
-  margin-top:10px;
-  white-space:pre-wrap;
-}
+.seen-link{border-color:#e73762!important;background:#300711!important}
+.admin-stats{color:#aaa;margin-bottom:10px}
+.admin-grid{display:grid;gap:12px}
+.admin-video-card{background:#111;border:1px solid #2b2d38;border-radius:15px;padding:10px}
+.admin-video-row{display:grid;grid-template-columns:96px 1fr;gap:10px;align-items:center}
+.admin-video-card img{width:96px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;background:#222}
+.admin-video-card b{display:block;font-size:15px;line-height:1.2}
+.admin-video-card span{display:block;color:#aaa;font-size:12px;margin-top:4px}
+.admin-video-buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.admin-video-buttons button{border:0;border-radius:11px;padding:11px;color:#fff;background:#22242d;font-weight:800}
+.admin-video-buttons button.danger{background:#35111b}
+.admin-error{background:#331018;border:1px solid #e73762;color:#fff;padding:12px;border-radius:14px;margin-top:10px;white-space:pre-wrap}
+.quick-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.quick-tags button{border:1px solid #343642;background:#101116;color:#fff;border-radius:10px;padding:8px 10px;font-weight:800}
 </style>
 </head>
 
@@ -202,21 +50,14 @@
 <script>
 const password = "12345";
 const userPass = prompt("Введите пароль");
-
 if (userPass !== password) {
-  document.body.innerHTML = `
-    <div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">
-      Доступ запрещён
-    </div>
-  `;
+  document.body.innerHTML = `<div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial;font-size:24px;text-align:center;padding:20px;">Доступ запрещён</div>`;
 }
 </script>
 
 <header class="admin-header">
   <a href="index.html">← На сайт</a>
-  <div class="admin-logo">
-    <span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span> Admin
-  </div>
+  <div class="admin-logo"><span class="logo-sex">SEX</span><span class="logo-dash">-</span><span class="logo-campos">campos</span> Admin</div>
 </header>
 
 <main class="admin-main">
@@ -224,54 +65,28 @@ if (userPass !== password) {
 <section class="admin-panel">
   <h1>Быстрое добавление</h1>
   <p>Вставь ссылку на скачивание/MP4 → нажми авто. Название, теги и категория подберутся сами.</p>
-
   <label>Ссылка на ролик / скачивание / MP4</label>
   <input id="sourceUrl" class="admin-input" placeholder="https://site.com/video-name">
-
   <div class="admin-actions">
-    <button type="button" onclick="smartFill()">⚡ Автозаполнить</button>
-    <button type="button" onclick="randomTags()">🎲 Рандом теги</button>
+    <button type="button" id="smartFillBtn">⚡ Автозаполнить</button>
+    <button type="button" id="randomTagsBtn">🎲 Рандом теги</button>
   </div>
-
+  <div class="quick-tags" id="quickTags"></div>
   <div id="linkWarning" class="link-warning"></div>
 </section>
 
 <section class="admin-panel">
   <h2 id="formTitle">Добавить ролик</h2>
-
-  <label>MP4 ссылка</label>
-  <input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
-
-  <label>Превью</label>
-  <input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
-
-  <div class="admin-preview">
-    <video id="previewVideo" controls playsinline></video>
-    <img id="previewImage" alt="preview">
-  </div>
-
-  <label>Название</label>
-  <input id="title" class="admin-input" placeholder="Название видео">
-
-  <label>Модели</label>
-  <input id="models" class="admin-input" placeholder="Kiss Cat, Shalina Devine">
-
-  <label>Категория</label>
-  <select id="category" class="admin-input"></select>
-
-  <label>Просмотры</label>
-  <input id="views" class="admin-input" placeholder="0">
-
-  <label>Теги</label>
-  <textarea id="tags" class="admin-input admin-textarea" placeholder="заполняются автоматически"></textarea>
-
-  <label>Длительность</label>
-  <input id="duration" class="admin-input" placeholder="12:45">
-
-  <label class="admin-check">
-    <input id="premium" type="checkbox"> Premium
-  </label>
-
+  <label>MP4 ссылка</label><input id="video" class="admin-input" placeholder="https://site.com/video.mp4">
+  <label>Превью</label><input id="image" class="admin-input" placeholder="https://site.com/preview.jpg">
+  <div class="admin-preview"><video id="previewVideo" controls playsinline></video><img id="previewImage" alt="preview"></div>
+  <label>Название</label><input id="title" class="admin-input" placeholder="Название видео">
+  <label>Модели</label><input id="models" class="admin-input" placeholder="Kiss Cat, Shalina Devine">
+  <label>Категория</label><select id="category" class="admin-input"></select>
+  <label>Просмотры</label><input id="views" class="admin-input" placeholder="0">
+  <label>Теги</label><textarea id="tags" class="admin-input admin-textarea" placeholder="заполняются автоматически"></textarea>
+  <label>Длительность</label><input id="duration" class="admin-input" placeholder="12:45">
+  <label class="admin-check"><input id="premium" type="checkbox"> Premium</label>
   <button id="saveBtn" class="admin-save" type="button">Добавить в Firebase</button>
   <button id="cancelEditBtn" class="admin-secondary" type="button" style="display:none">Отменить редактирование</button>
 </section>
@@ -285,38 +100,24 @@ if (userPass !== password) {
 </main>
 
 <script type="module">
-import {
-  db,
-  collection,
-  addDoc,
-  getDocs,
-  deleteDoc,
-  doc,
-  serverTimestamp,
-  updateDoc
-} from "./firebase.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, serverTimestamp, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const categories = [
-  "русское", "женский куколдинг", "грязные разговоры", "с разговорами",
-  "свингеры", "измена", "красивое", "соблазнение парня",
-  "соблазнение девушки", "pov", "непостановочное", "спящие",
-  "крупным планом", "чулки", "мжм", "жмж", "бдсм", "сексвайф",
-  "в поезде", "в тренде", "новые"
-];
+const firebaseConfig = {
+  apiKey: "AIzaSyDELdrcdlFv6OAWOzPLEBYFOzcQLcK_SgM",
+  authDomain: "sex-campus.firebaseapp.com",
+  projectId: "sex-campus",
+  storageBucket: "sex-campus.firebasestorage.app",
+  messagingSenderId: "1021649767987",
+  appId: "1:1021649767987:web:ccc0b366a159d689e8dd46",
+  measurementId: "G-ZP8X7YRLKW"
+};
 
-const defaultTags = [
-  "русское", "грязные разговоры", "с разговорами", "спящие", "измена",
-  "pov", "непостановочное", "красивое", "соблазнение девушки",
-  "мастурбируют девушке", "дрочат парню", "красивый минет", "куни",
-  "минет", "муж и жена", "пара", "красивое белье", "высокие девушки",
-  "загорелые", "худенькие", "в халате", "в пеньюаре", "смуглые",
-  "упругие сиськи", "большие сиськи", "красивые сиськи", "с тату",
-  "интимные стрижки", "силиконовая грудь", "красивые киски",
-  "большие члены", "красивые члены", "домашнее", "в спальне",
-  "на диване", "кончают внутрь", "оргазм", "блондинки", "русые",
-  "шатенки", "мамочка", "милашки", "горячие", "взаимная мастурбация",
-  "ножки", "одновременный оргазм"
-];
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const categories = ["русское","женский куколдинг","грязные разговоры","с разговорами","свингеры","измена","красивое","соблазнение парня","соблазнение девушки","pov","непостановочное","спящие","крупным планом","чулки","мжм","жмж","бдсм","сексвайф","в поезде","в тренде","новые"];
+const defaultTags = ["русское","грязные разговоры","с разговорами","спящие","измена","pov","непостановочное","красивое","соблазнение девушки","мастурбируют девушке","дрочат парню","красивый минет","куни","минет","муж и жена","пара","красивое белье","высокие девушки","загорелые","худенькие","в халате","в пеньюаре","смуглые","упругие сиськи","большие сиськи","красивые сиськи","с тату","интимные стрижки","силиконовая грудь","красивые киски","большие члены","красивые члены","домашнее","в спальне","на диване","кончают внутрь","оргазм","блондинки","русые","шатенки","мамочка","милашки","горячие","взаимная мастурбация","ножки","одновременный оргазм"];
 
 let firebaseVideos = [];
 let editingId = null;
@@ -338,38 +139,40 @@ const previewImage = document.getElementById("previewImage");
 const warning = document.getElementById("linkWarning");
 const adminStats = document.getElementById("adminStats");
 const adminGrid = document.getElementById("adminGrid");
+const quickTags = document.getElementById("quickTags");
 
 categoryInput.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join("");
+quickTags.innerHTML = defaultTags.slice(0, 24).map(tag => `<button type="button" data-tag="${tag}">+ ${tag}</button>`).join("");
+
+quickTags.addEventListener("click", event => {
+  const tag = event.target.dataset.tag;
+  if (tag) addTag(tag);
+});
+document.getElementById("smartFillBtn").addEventListener("click", smartFill);
+document.getElementById("randomTagsBtn").addEventListener("click", randomTags);
+saveBtn.addEventListener("click", saveVideo);
+cancelEditBtn.addEventListener("click", resetForm);
 
 function showError(error) {
   adminStats.innerHTML = `<div class="admin-error">Ошибка Firebase:\\n${error.message || error}</div>`;
 }
 
 function getSeenLinks() {
-  try {
-    return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]");
-  } catch(e) {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem("sex_campos_seen_links") || "[]"); }
+  catch(e) { return []; }
 }
 
 function saveSeenLink(url) {
   if (!url) return;
-
   const list = getSeenLinks().filter(x => x !== url);
   list.unshift(url);
-
   localStorage.setItem("sex_campos_seen_links", JSON.stringify(list.slice(0, 500)));
 }
 
 function checkSeen(input) {
   const url = input.value.trim();
   const seen = getSeenLinks();
-
-  const exists =
-    seen.includes(url) ||
-    firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
-
+  const exists = seen.includes(url) || firebaseVideos.some(v => v.video === url || v.sourceUrl === url || v.image === url);
   if (url && exists) {
     input.classList.add("seen-link");
     warning.textContent = "⚠️ Эта ссылка уже встречалась / была добавлена";
@@ -387,6 +190,12 @@ function checkSeen(input) {
   });
 });
 
+function addTag(tag) {
+  const current = tagsInput.value.split(",").map(t => t.trim()).filter(Boolean);
+  if (!current.includes(tag)) current.push(tag);
+  tagsInput.value = current.join(", ");
+}
+
 function cleanFromUrl(url) {
   return decodeURIComponent(String(url || ""))
     .replace(/^https?:\\/\\//, "")
@@ -401,116 +210,77 @@ function cleanFromUrl(url) {
 
 function guessCategory(text) {
   const t = text.toLowerCase();
-
   if (t.includes("pov")) return "pov";
   if (t.includes("измен") || t.includes("cheat")) return "измена";
   if (t.includes("разговор") || t.includes("talk")) return "с разговорами";
   if (t.includes("куколд") || t.includes("cuckold")) return "женский куколдинг";
   if (t.includes("bdsm") || t.includes("бдсм")) return "бдсм";
-
   return categories[Math.floor(Math.random() * Math.min(categories.length, 12))];
 }
 
 function tagsFromText(text) {
   const t = text.toLowerCase();
-  const found = defaultTags.filter(tag => t.includes(tag.toLowerCase()));
-
+  const found = [];
+  defaultTags.forEach(tag => {
+    if (t.includes(tag.toLowerCase()) && !found.includes(tag)) found.push(tag);
+  });
   while (found.length < 12) {
     const random = defaultTags[Math.floor(Math.random() * defaultTags.length)];
-
-    if (!found.includes(random)) {
-      found.push(random);
-    }
+    if (!found.includes(random)) found.push(random);
   }
-
   return found.slice(0, 18);
 }
 
 function guessPreview(url) {
   const clean = String(url || "").split("?")[0];
-
   if (/\\.(jpg|jpeg|png|webp)$/i.test(clean)) return url;
-
   if (/\\.(mp4|webm)$/i.test(clean)) {
-    return clean
-      .replace(/\\.(mp4|webm)$/i, ".jpg")
-      .replace("/videos/", "/thumbs/")
-      .replace("/video/", "/thumbs/");
+    return clean.replace(/\\.(mp4|webm)$/i, ".jpg").replace("/videos/", "/thumbs/").replace("/video/", "/thumbs/");
   }
-
   return "";
 }
 
-window.smartFill = function () {
+function smartFill() {
   const url = sourceUrl.value.trim();
-
-  if (!url) {
-    alert("Вставь ссылку");
-    return;
-  }
+  if (!url) return alert("Вставь ссылку");
 
   const text = cleanFromUrl(url);
-  const title = text || "Новое видео";
   const category = guessCategory(text);
   const tags = tagsFromText(text);
 
-  titleInput.value = title;
+  titleInput.value = text || "Новое видео";
   categoryInput.value = category;
   tagsInput.value = tags.join(", ");
 
-  if (/\\.(mp4|webm|m3u8)(\\?|#|$)/i.test(url)) {
-    videoInput.value = url;
-  }
+  if (/\\.(mp4|webm|m3u8)(\\?|#|$)/i.test(url)) videoInput.value = url;
 
   const preview = guessPreview(url);
+  if (preview && !imageInput.value) imageInput.value = preview;
 
-  if (preview && !imageInput.value) {
-    imageInput.value = preview;
-  }
-
-  if (!viewsInput.value) {
-    viewsInput.value = Math.floor(Math.random() * 900000) + 10000;
-  }
+  if (!viewsInput.value) viewsInput.value = Math.floor(Math.random() * 900000) + 10000;
 
   renderPreview();
   checkSeen(sourceUrl);
-};
+}
 
-window.randomTags = function () {
+function randomTags() {
   const tags = [];
-
   while (tags.length < 14) {
     const t = defaultTags[Math.floor(Math.random() * defaultTags.length)];
-
-    if (!tags.includes(t)) {
-      tags.push(t);
-    }
+    if (!tags.includes(t)) tags.push(t);
   }
-
   tagsInput.value = tags.join(", ");
   categoryInput.value = tags[0] || "русское";
-};
+}
 
 function renderPreview() {
-  if (videoInput.value) {
-    previewVideo.src = videoInput.value;
-  }
-
-  if (imageInput.value) {
-    previewImage.src = imageInput.value;
-  }
+  if (videoInput.value) previewVideo.src = videoInput.value;
+  if (imageInput.value) previewImage.src = imageInput.value;
 }
 
 function getItem() {
-  const models = modelsInput.value
-    .split(",")
-    .map(x => x.trim())
-    .filter(Boolean);
-
-  const tags = tagsInput.value
-    .split(",")
-    .map(x => x.trim())
-    .filter(Boolean);
+  const models = modelsInput.value.split(",").map(x => x.trim()).filter(Boolean);
+  const tags = tagsInput.value.split(",").map(x => x.trim()).filter(Boolean);
 
   return {
     title: titleInput.value || "Без названия",
@@ -530,11 +300,7 @@ function getItem() {
 async function saveVideo() {
   try {
     const item = getItem();
-
-    if (!item.video) {
-      alert("Вставь MP4 ссылку");
-      return;
-    }
+    if (!item.video) return alert("Вставь MP4 ссылку");
 
     saveBtn.disabled = true;
     saveBtn.textContent = editingId ? "Сохраняю..." : "Добавляю...";
@@ -545,13 +311,11 @@ async function saveVideo() {
     } else {
       item.createdAt = Date.now();
       item.createdAtServer = serverTimestamp();
-
       await addDoc(collection(db, "videos"), item);
       alert("Ролик добавлен");
     }
 
     [item.sourceUrl, item.video, item.image].forEach(saveSeenLink);
-
     resetForm();
     await loadVideos();
   } catch (error) {
@@ -563,22 +327,16 @@ async function saveVideo() {
   }
 }
 
-saveBtn.addEventListener("click", saveVideo);
-cancelEditBtn.addEventListener("click", () => resetForm());
-
 function resetForm() {
   editingId = null;
-
   saveBtn.textContent = "Добавить в Firebase";
   cancelEditBtn.style.display = "none";
   document.getElementById("formTitle").textContent = "Добавить ролик";
 
-  [sourceUrl, videoInput, imageInput, titleInput, modelsInput, viewsInput, tagsInput, durationInput]
-    .forEach(i => {
-      i.value = "";
-      i.classList.remove("seen-link");
-    });
-
+  [sourceUrl, videoInput, imageInput, titleInput, modelsInput, viewsInput, tagsInput, durationInput].forEach(i => {
+    i.value = "";
+    i.classList.remove("seen-link");
+  });
   premiumInput.checked = false;
   warning.classList.remove("show");
   previewVideo.removeAttribute("src");
@@ -587,11 +345,9 @@ function resetForm() {
 
 window.editVideo = function(id) {
   const v = firebaseVideos.find(x => x.id === id);
-
   if (!v) return;
 
   editingId = id;
-
   document.getElementById("formTitle").textContent = "Редактировать ролик";
   saveBtn.textContent = "Сохранить изменения";
   cancelEditBtn.style.display = "block";
@@ -608,21 +364,14 @@ window.editVideo = function(id) {
   premiumInput.checked = Boolean(v.premium);
 
   renderPreview();
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+  window.scrollTo({ top: 0, behavior: "smooth" });
 };
 
 window.deleteVideo = async function(id) {
   try {
     if (!confirm("Удалить ролик?")) return;
-
     await deleteDoc(doc(db, "videos", id));
-
     await loadVideos();
-
     alert("Ролик удалён");
   } catch (error) {
     alert("Ошибка удаления: " + error.message);
@@ -637,11 +386,7 @@ async function loadVideos() {
 
     const snap = await getDocs(collection(db, "videos"));
 
-    firebaseVideos = snap.docs.map(d => ({
-      id: d.id,
-      ...d.data()
-    }));
-
+    firebaseVideos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     firebaseVideos.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
 
     renderAdmin();
@@ -654,12 +399,7 @@ function renderAdmin() {
   adminStats.textContent = `Всего видео: ${firebaseVideos.length}`;
 
   if (!firebaseVideos.length) {
-    adminGrid.innerHTML = `
-      <div class="admin-video-card">
-        <b>Видео пока нет</b>
-        <span>Добавь первый ролик выше.</span>
-      </div>
-    `;
+    adminGrid.innerHTML = `<div class="admin-video-card"><b>Видео пока нет</b><span>Добавь первый ролик выше.</span></div>`;
     return;
   }
 
@@ -673,7 +413,6 @@ function renderAdmin() {
           <span>${v.video ? "MP4 есть" : "MP4 нет"}</span>
         </div>
       </div>
-
       <div class="admin-video-buttons">
         <button type="button" onclick="editVideo('${v.id}')">Редактировать</button>
         <button type="button" class="danger" onclick="deleteVideo('${v.id}')">Удалить</button>
